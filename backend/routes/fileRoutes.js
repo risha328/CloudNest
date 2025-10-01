@@ -6,7 +6,10 @@ import {
   getFileMetadata,
   accessFile,
   downloadFile,
-  deleteFile
+  deleteFile,
+    setExpiry,
+    resetPassword,
+    getFileStats
 } from "../controllers/fileController.js";
 
 const router = express.Router();
@@ -20,4 +23,7 @@ router.delete("/:id", protect, deleteFile);
 router.post("/:id/access", accessFile);
 router.get("/:id/download", downloadFile);
 
+router.post("/:id/set-expiry", protect, setExpiry);
+router.post("/:id/reset-password", protect, resetPassword);
+router.get("/:id/stats", protect, getFileStats);
 export default router;
