@@ -16,11 +16,8 @@ Only users with the correct password can unlock and access the files.
 
 ## 🛠️ Tech Stack
 - **Frontend:** React + Tailwind CSS
-- **Backend:** Node.js + Express (TypeScript)
+- **Backend:** Node.js + Express (JavaScript)
 - **Database:** MongoDB Atlas
-- **Storage:** AWS S3 / S3-compatible storage
-- **Queue & Workers:** Redis + BullMQ
-- **Infra & CI/CD:** Docker, Terraform, GitHub Actions
 
 ## 📌 Roadmap
 - ✅ MVP: Upload & password-protect files
