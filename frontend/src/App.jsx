@@ -8,6 +8,7 @@ import Upload from "./pages/Upload";
 import FileView from "./pages/FileView";
 import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
+import Features from "./pages/Featurespage";
 //import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/features" element={<Features />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/dashboard" element={<Dashboard />} />

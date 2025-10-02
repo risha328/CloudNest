@@ -9,12 +9,14 @@ import {
   deleteFile,
     setExpiry,
     resetPassword,
-    getFileStats
+    getFileStats,
+    getFilesByFolder
 } from "../controllers/fileController.js";
 
 const router = express.Router();
 
 // Authenticated routes
+router.get("/", protect, getFilesByFolder);
 router.post("/", protect, upload.single("file"), uploadFile);
 router.get("/:id/metadata", protect, getFileMetadata);
 router.delete("/:id", protect, deleteFile);

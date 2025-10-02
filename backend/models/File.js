@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const fileSchema = new mongoose.Schema({
   ownerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  folderId: { type: mongoose.Schema.Types.ObjectId, ref: "Folder" },
   originalName: { type: String, required: true },
   storageName: { type: String, required: true },
   path: { type: String, required: true },

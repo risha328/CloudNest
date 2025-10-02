@@ -6,8 +6,8 @@ import File from "../models/File.js";
 // Upload file
 export const uploadFile = async (req, res) => {
   try {
-    const { password, expiresAt } = req.body;
-    if (!req.file) 
+    const { password, expiresAt, folderId } = req.body;
+    if (!req.file)
         return res.status(400).json({ message: "File is required" });
 
     let passwordHash = null;
@@ -18,6 +18,7 @@ export const uploadFile = async (req, res) => {
 
     const file = await File.create({
       ownerId: req.user._id,
+      folderId: folderId || null,
       originalName: req.file.originalname,
       storageName: req.file.filename,
       path: req.file.path,
@@ -167,6 +168,19 @@ export const resetPassword = async (req, res) => {
 
     await file.save();
     res.json({ message: "Password reset successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get files by folder
+export const getFilesByFolder = async (req, res) => {
+  try {
+    const { folderId } = req.query;
+    if (!folderId) return res.status(400).json({ message: "Folder ID required" });
+
+    const files = await File.find({ ownerId: req.user._id, folderId }).sort({ createdAt: -1 });
+    res.json(files);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
