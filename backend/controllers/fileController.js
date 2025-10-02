@@ -186,6 +186,30 @@ export const getFilesByFolder = async (req, res) => {
   }
 };
 
+// Get storage stats for user
+export const getStorageStats = async (req, res) => {
+  try {
+    const stats = await File.aggregate([
+      { $match: { ownerId: req.user._id } },
+      {
+        $group: {
+          _id: null,
+          totalSize: { $sum: "$size" },
+          filesCount: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const used = stats.length > 0 ? stats[0].totalSize : 0;
+    const filesCount = stats.length > 0 ? stats[0].filesCount : 0;
+    const total = 5368709120; // 5GB in bytes
+
+    res.json({ used, total, filesCount });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 //filestats
 export const getFileStats = async (req, res) => {
   try {

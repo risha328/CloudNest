@@ -1,4 +1,5 @@
 import Folder from "../models/Folder.js";
+import File from "../models/File.js";
 
 // Create a new folder
 export const createFolder = async (req, res) => {
@@ -18,10 +19,31 @@ export const createFolder = async (req, res) => {
   }
 };
 
-// Get all folders for the user
+// Get all folders for the user with file counts
 export const getFolders = async (req, res) => {
   try {
-    const folders = await Folder.find({ ownerId: req.user._id }).sort({ createdAt: -1 });
+    const folders = await Folder.aggregate([
+      { $match: { ownerId: req.user._id } },
+      {
+        $lookup: {
+          from: "files",
+          localField: "_id",
+          foreignField: "folderId",
+          as: "files"
+        }
+      },
+      {
+        $addFields: {
+          fileCount: { $size: "$files" }
+        }
+      },
+      {
+        $project: {
+          files: 0
+        }
+      },
+      { $sort: { createdAt: -1 } }
+    ]);
     res.json(folders);
   } catch (error) {
     res.status(500).json({ message: error.message });

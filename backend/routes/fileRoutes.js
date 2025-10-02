@@ -10,13 +10,15 @@ import {
     setExpiry,
     resetPassword,
     getFileStats,
-    getFilesByFolder
+    getFilesByFolder,
+    getStorageStats
 } from "../controllers/fileController.js";
 
 const router = express.Router();
 
 // Authenticated routes
 router.get("/", protect, getFilesByFolder);
+router.get("/storage/stats", protect, getStorageStats);
 router.post("/", protect, upload.single("file"), uploadFile);
 router.get("/:id/metadata", protect, getFileMetadata);
 router.delete("/:id", protect, deleteFile);
