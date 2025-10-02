@@ -11,7 +11,8 @@ import {
     resetPassword,
     getFileStats,
     getFilesByFolder,
-    getStorageStats
+    getStorageStats,
+    getFolderAnalytics
 } from "../controllers/fileController.js";
 
 const router = express.Router();
@@ -30,4 +31,5 @@ router.get("/:id/download", downloadFile);
 router.post("/:id/set-expiry", protect, setExpiry);
 router.post("/:id/reset-password", protect, resetPassword);
 router.get("/:id/stats", protect, getFileStats);
+router.get("/folders/:folderId/analytics", protect, getFolderAnalytics);
 export default router;

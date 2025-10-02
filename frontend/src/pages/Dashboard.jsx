@@ -230,10 +230,12 @@
 
 
 import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../utils/api";
 import { AuthContext } from "../context/AuthContext";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const [folders, setFolders] = useState([]);
   const [selectedFolder, setSelectedFolder] = useState(null);
@@ -619,6 +621,16 @@ const Dashboard = () => {
                                   </svg>
                                 </div>
                               )}
+
+                              <button
+                                onClick={() => navigate(`/analytics/file/${file._id}`)}
+                                className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center hover:bg-purple-200 transition-colors"
+                                title="View Analytics"
+                              >
+                                <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                              </button>
                             </div>
                           </div>
                         ))}

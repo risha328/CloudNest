@@ -89,6 +89,11 @@ export const accessFile = async (req, res) => {
       }
     }
 
+    // Track view
+    file.viewCount += 1;
+    file.viewTimestamps.push(new Date());
+    await file.save();
+
     res.json({ downloadUrl: `/api/files/${file._id}/download` });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -103,8 +108,9 @@ export const downloadFile = async (req, res) => {
     if (!file) return res.status(404).json({ message: "File not found" });
     if (file.blocked) return res.status(403).json({ message: "File is blocked" });
 
-    // Increment download count
+    // Increment download count and track timestamp
     file.downloadCount += 1;
+    file.downloadTimestamps.push(new Date());
     await file.save();
 
     res.download(path.resolve(file.path), file.originalName);
@@ -221,11 +227,43 @@ export const getFileStats = async (req, res) => {
     res.json({
       originalName: file.originalName,
       downloadCount: file.downloadCount,
+      viewCount: file.viewCount,
+      downloadTimestamps: file.downloadTimestamps,
+      viewTimestamps: file.viewTimestamps,
       failedAttempts: file.failedAttempts,
       maxDownloads: file.maxDownloads,
       expiresAt: file.expiresAt,
       createdAt: file.createdAt
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get folder analytics
+export const getFolderAnalytics = async (req, res) => {
+  try {
+    const { folderId } = req.params;
+    if (!folderId) return res.status(400).json({ message: "Folder ID required" });
+
+    const files = await File.find({ ownerId: req.user._id, folderId });
+
+    const analytics = {
+      totalFiles: files.length,
+      totalViews: files.reduce((sum, file) => sum + file.viewCount, 0),
+      totalDownloads: files.reduce((sum, file) => sum + file.downloadCount, 0),
+      files: files.map(file => ({
+        _id: file._id,
+        originalName: file.originalName,
+        viewCount: file.viewCount,
+        downloadCount: file.downloadCount,
+        viewTimestamps: file.viewTimestamps,
+        downloadTimestamps: file.downloadTimestamps,
+        createdAt: file.createdAt
+      }))
+    };
+
+    res.json(analytics);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

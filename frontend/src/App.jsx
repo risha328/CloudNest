@@ -6,6 +6,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
 import FileView from "./pages/FileView";
+import FileAnalytics from "./pages/FileAnalytics";
 import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
 import Features from "./pages/Featurespage";
@@ -26,6 +27,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/upload" element={<Upload />} />
           <Route path="/file/:id" element={<FileView />} />
+          <Route path="/analytics/:type/:id" element={<FileAnalytics />} />
         
         </Routes>
       </div>

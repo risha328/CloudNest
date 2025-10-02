@@ -10,6 +10,9 @@ const fileSchema = new mongoose.Schema({
   size: { type: Number },
   passwordHash: { type: String }, // bcrypt hash
   downloadCount: { type: Number, default: 0 },
+  viewCount: { type: Number, default: 0 },
+  downloadTimestamps: [{ type: Date }],
+  viewTimestamps: [{ type: Date }],
   maxDownloads: { type: Number },
   expiresAt: { type: Date },
   blocked: { type: Boolean, default: false },
