@@ -5,6 +5,7 @@ import {
   uploadFile,
   getFileMetadata,
   accessFile,
+  viewFile,
   downloadFile,
   deleteFile,
     setExpiry,
@@ -24,9 +25,10 @@ router.post("/", protect, upload.single("file"), uploadFile);
 router.get("/:id/metadata", protect, getFileMetadata);
 router.delete("/:id", protect, deleteFile);
 
-// Public access routes
-router.post("/:id/access", accessFile);
-router.get("/:id/download", downloadFile);
+// Protected access routes
+router.post("/:id/access", protect, accessFile);
+router.get("/:id/view", protect, viewFile);
+router.get("/:id/download", protect, downloadFile);
 
 router.post("/:id/set-expiry", protect, setExpiry);
 router.post("/:id/reset-password", protect, resetPassword);

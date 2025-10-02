@@ -6,7 +6,8 @@ const FileView = () => {
   const { id: fileId } = useParams();
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-  const [downloadUrl, setDownloadUrl] = useState("");
+  const [viewUrl, setViewUrl] = useState("");
+  const [fileBlobUrl, setFileBlobUrl] = useState("");
   const [fileName, setFileName] = useState("");
 
   useEffect(() => {
@@ -16,28 +17,27 @@ const FileView = () => {
   const handleAccess = async () => {
     try {
       const res = await API.post(`/files/${fileId}/access`, { password });
-      setDownloadUrl(res.data.downloadUrl);
-      setMessage("Access granted. Click download to get the file.");
+      setViewUrl(res.data.viewUrl.replace('/api', ''));
+      setMessage("Access granted. Click view to see the file.");
     } catch (error) {
       setMessage(error.response?.data?.message || "Access failed");
     }
   };
 
-  const handleDownload = () => {
-    if (downloadUrl) {
-      // Use anchor element to trigger download
-      const link = document.createElement("a");
-      const backendBase = API.defaults.baseURL.replace('/api', '');
-      link.href = backendBase + downloadUrl;
-      link.download = ""; // Let browser decide filename
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+  const handleView = async () => {
+    try {
+      const res = await API.get(viewUrl, { responseType: 'blob' });
+      const blob = new Blob([res.data], { type: res.headers['content-type'] });
+      const url = URL.createObjectURL(blob);
+      setFileBlobUrl(url);
+      setMessage("File loaded. View below.");
+    } catch (error) {
+      setMessage("Failed to load file: " + (error.response?.data?.message || error.message));
     }
   };
 
   return (
-    <div className="p-6 max-w-md mx-auto">
+    <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Access File</h1>
       <div className="mb-4">
         <input
@@ -57,13 +57,18 @@ const FileView = () => {
       {message && (
         <p className="text-sm text-red-600 mb-4">{message}</p>
       )}
-      {downloadUrl && (
+      {viewUrl && !fileBlobUrl && (
         <button
-          onClick={handleDownload}
+          onClick={handleView}
           className="bg-green-600 text-white px-4 py-2 rounded w-full"
         >
-          Download File
+          View File
         </button>
+      )}
+      {fileBlobUrl && (
+        <div className="mt-4">
+          <iframe src={fileBlobUrl} width="100%" height="600px" title="File Viewer" />
+        </div>
       )}
     </div>
   );

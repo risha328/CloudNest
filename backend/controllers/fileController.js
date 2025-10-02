@@ -106,12 +106,37 @@ export const accessFile = async (req, res) => {
     file.viewTimestamps.push(new Date());
     await file.save();
 
-    res.json({ downloadUrl: `/api/files/${file._id}/download` });
+    res.json({ viewUrl: `/files/${file._id}/view` });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+
+// View file inline
+export const viewFile = async (req, res) => {
+  try {
+    const file = await File.findById(req.params.id);
+    if (!file) return res.status(404).json({ message: "File not found" });
+    if (file.blocked) return res.status(403).json({ message: "File is blocked" });
+
+    // Check permissions - viewers and above can view
+    const hasPermission = await checkPermission(req.user._id, file._id, 'file', 'viewer');
+    if (!hasPermission) return res.status(403).json({ message: "View denied" });
+
+    // Track view
+    file.viewCount += 1;
+    file.viewTimestamps.push(new Date());
+    await file.save();
+
+    // Set headers for inline display
+    res.setHeader('Content-Type', file.mimeType);
+    res.setHeader('Content-Disposition', 'inline; filename="' + file.originalName + '"');
+    res.sendFile(path.resolve(file.path));
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // Download file
 export const downloadFile = async (req, res) => {
