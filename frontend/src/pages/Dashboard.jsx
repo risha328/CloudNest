@@ -231,7 +231,7 @@
 
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../utils/api";
+import API, { searchUsers } from "../utils/api";
 import { AuthContext } from "../context/AuthContext";
 
 const Dashboard = () => {
@@ -248,6 +248,14 @@ const Dashboard = () => {
   const [folderMessage, setFolderMessage] = useState("");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [shareResource, setShareResource] = useState(null); // { type: 'file'|'folder', id, name }
+  const [permissions, setPermissions] = useState([]);
+  const [newPermissionRole, setNewPermissionRole] = useState('viewer');
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [userSearchResults, setUserSearchResults] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
   const [storageStats, setStorageStats] = useState({
     used: 0,
@@ -269,6 +277,25 @@ const Dashboard = () => {
       setFiles([]);
     }
   }, [selectedFolder]);
+
+  useEffect(() => {
+    const searchUsersDebounced = async () => {
+      if (userSearchQuery.length >= 2) {
+        try {
+          const res = await searchUsers(userSearchQuery);
+          setUserSearchResults(res.data);
+          setShowUserDropdown(true);
+        } catch (error) {
+          console.error("Failed to search users", error);
+        }
+      } else {
+        setUserSearchResults([]);
+        setShowUserDropdown(false);
+      }
+    };
+    const timeoutId = setTimeout(searchUsersDebounced, 300);
+    return () => clearTimeout(timeoutId);
+  }, [userSearchQuery]);
 
   const fetchStorageStats = async () => {
     try {
@@ -382,6 +409,57 @@ const Dashboard = () => {
 
   const formatStoragePercentage = () => {
     return ((storageStats.used / storageStats.total) * 100).toFixed(1);
+  };
+
+  // Permission functions
+  const openShareModal = (type, id, name) => {
+    setShareResource({ type, id, name });
+    setPermissions([]);
+    setSelectedUser(null);
+    setUserSearchQuery('');
+    setShowUserDropdown(false);
+    setNewPermissionRole('viewer');
+    fetchPermissions(id, type);
+    setIsShareModalOpen(true);
+  };
+
+  const fetchPermissions = async (resourceId, resourceType) => {
+    try {
+      const res = await API.get(`/permissions/${resourceType}/${resourceId}`);
+      setPermissions(res.data);
+    } catch (error) {
+      console.error("Failed to fetch permissions", error);
+    }
+  };
+
+  const handleGrantPermission = async () => {
+    if (!selectedUser) return;
+    try {
+      await API.post('/permissions/grant', {
+        userId: selectedUser._id,
+        resourceId: shareResource.id,
+        resourceType: shareResource.type,
+        role: newPermissionRole
+      });
+      fetchPermissions(shareResource.id, shareResource.type);
+      setSelectedUser(null);
+      setUserSearchQuery('');
+      setShowUserDropdown(false);
+      setNewPermissionRole('viewer');
+    } catch (error) {
+      console.error("Failed to grant permission", error);
+    }
+  };
+
+  const handleRevokePermission = async (permissionId) => {
+    try {
+      const permission = permissions.find(p => p._id === permissionId);
+      if (!permission) return;
+      await API.delete(`/permissions/${shareResource.type}/${shareResource.id}/revoke/${permission.userId._id}`);
+      fetchPermissions(shareResource.id, shareResource.type);
+    } catch (error) {
+      console.error("Failed to revoke permission", error);
+    }
   };
 
   return (
@@ -510,6 +588,18 @@ const Dashboard = () => {
                       <p className="text-sm font-medium text-gray-900 truncate">{folder.name}</p>
                       <p className="text-xs text-gray-500">{folder.fileCount || 0} files</p>
                     </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openShareModal('folder', folder._id, folder.name);
+                      }}
+                      className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+                      title="Share Folder"
+                    >
+                      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                      </svg>
+                    </button>
                   </button>
                 ))}
                 
@@ -621,6 +711,16 @@ const Dashboard = () => {
                                   </svg>
                                 </div>
                               )}
+
+                              <button
+                                onClick={() => openShareModal('file', file._id, file.originalName)}
+                                className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center hover:bg-orange-200 transition-colors"
+                                title="Share File"
+                              >
+                                <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                                </svg>
+                              </button>
 
                               <button
                                 onClick={() => navigate(`/analytics/file/${file._id}`)}
@@ -781,6 +881,112 @@ const Dashboard = () => {
                   ) : (
                     <span>Upload File</span>
                   )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Share Modal */}
+      {isShareModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md border border-gray-200">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">
+              Share {shareResource?.type === 'file' ? 'File' : 'Folder'}
+            </h3>
+            <p className="text-gray-600 mb-4">{shareResource?.name}</p>
+
+            {/* Current Permissions */}
+            <div className="mb-6">
+              <h4 className="text-sm font-medium text-gray-900 mb-2">Current Permissions</h4>
+              <div className="space-y-2 max-h-32 overflow-y-auto">
+                {permissions.length > 0 ? (
+                  permissions.map((permission) => (
+                    <div key={permission._id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{permission.userId?.name || permission.userId?.email || permission.userId}</p>
+                        <p className="text-xs text-gray-500 capitalize">{permission.role}</p>
+                      </div>
+                      <button
+                        onClick={() => handleRevokePermission(permission._id)}
+                        className="text-red-600 hover:text-red-700 text-sm"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No permissions granted yet</p>
+                )}
+              </div>
+            </div>
+
+            {/* Grant New Permission */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-medium text-gray-900">Grant Permission</h4>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Search User
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={userSearchQuery}
+                    onChange={(e) => setUserSearchQuery(e.target.value)}
+                    placeholder="Search for user"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  />
+                  {showUserDropdown && userSearchResults.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                      {userSearchResults.map((user) => (
+                        <div
+                          key={user._id}
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setUserSearchQuery(user.name || user.email);
+                            setShowUserDropdown(false);
+                          }}
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        >
+                          <p className="text-sm font-medium">{user.name}</p>
+                          <p className="text-xs text-gray-500">{user.email}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {selectedUser && (
+                  <p className="text-sm text-green-600 mt-2">Selected: {selectedUser.name} ({selectedUser.email})</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Role
+                </label>
+                <select
+                  value={newPermissionRole}
+                  onChange={(e) => setNewPermissionRole(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                >
+                  <option value="viewer">Viewer</option>
+                  <option value="editor">Editor</option>
+                </select>
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  onClick={() => setIsShareModalOpen(false)}
+                  className="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={handleGrantPermission}
+                  className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                >
+                  Grant Permission
                 </button>
               </div>
             </div>

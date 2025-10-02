@@ -1,5 +1,7 @@
 import Folder from "../models/Folder.js";
 import File from "../models/File.js";
+import Permission from "../models/Permission.js";
+import { checkPermission } from "./permissionController.js";
 
 // Create a new folder
 export const createFolder = async (req, res) => {
@@ -22,29 +24,33 @@ export const createFolder = async (req, res) => {
 // Get all folders for the user with file counts
 export const getFolders = async (req, res) => {
   try {
-    const folders = await Folder.aggregate([
-      { $match: { ownerId: req.user._id } },
-      {
-        $lookup: {
-          from: "files",
-          localField: "_id",
-          foreignField: "folderId",
-          as: "files"
-        }
-      },
-      {
-        $addFields: {
-          fileCount: { $size: "$files" }
-        }
-      },
-      {
-        $project: {
-          files: 0
-        }
-      },
-      { $sort: { createdAt: -1 } }
-    ]);
-    res.json(folders);
+    // Get folders owned by user
+    const ownedFolders = await Folder.find({ ownerId: req.user._id });
+
+    // Get folders where user has permission
+    const permissions = await Permission.find({
+      userId: req.user._id,
+      resourceType: 'folder'
+    }).populate('resourceId');
+
+    const permittedFolders = permissions.map(p => p.resourceId);
+
+    // Combine and remove duplicates
+    const allFolders = [...ownedFolders, ...permittedFolders];
+    const uniqueFolders = allFolders.filter((folder, index, self) =>
+      index === self.findIndex(f => f._id.equals(folder._id))
+    );
+
+    // Get file counts for each folder
+    const foldersWithCounts = await Promise.all(uniqueFolders.map(async (folder) => {
+      const fileCount = await File.countDocuments({ folderId: folder._id });
+      return {
+        ...folder.toObject(),
+        fileCount
+      };
+    }));
+
+    res.json(foldersWithCounts.sort((a, b) => b.createdAt - a.createdAt));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import fs from "fs";
 import path from "path";
 import File from "../models/File.js";
+import Folder from "../models/Folder.js";
+import { checkPermission } from "./permissionController.js";
 
 // Upload file
 export const uploadFile = async (req, res) => {
@@ -9,6 +11,12 @@ export const uploadFile = async (req, res) => {
     const { password, expiresAt, folderId } = req.body;
     if (!req.file)
         return res.status(400).json({ message: "File is required" });
+
+    // Check permission if uploading to a folder
+    if (folderId) {
+      const hasPermission = await checkPermission(req.user._id, folderId, 'folder', 'editor');
+      if (!hasPermission) return res.status(403).json({ message: "Upload denied" });
+    }
 
     let passwordHash = null;
     if (password) {
@@ -69,6 +77,10 @@ export const accessFile = async (req, res) => {
     if (!file) return res.status(404).json({ message: "File not found" });
     if (file.blocked) return res.status(403).json({ message: "File is blocked" });
 
+    // Check permissions - viewers and above can access
+    const hasPermission = await checkPermission(req.user._id, file._id, 'file', 'viewer');
+    if (!hasPermission) return res.status(403).json({ message: "Access denied" });
+
     // check expiry
     if (file.expiresAt && new Date() > file.expiresAt) {
       return res.status(410).json({ message: "File has expired" });
@@ -107,6 +119,10 @@ export const downloadFile = async (req, res) => {
     const file = await File.findById(req.params.id);
     if (!file) return res.status(404).json({ message: "File not found" });
     if (file.blocked) return res.status(403).json({ message: "File is blocked" });
+
+    // Check permissions - downloaders and above can download
+    const hasPermission = await checkPermission(req.user._id, file._id, 'file', 'downloader');
+    if (!hasPermission) return res.status(403).json({ message: "Download denied" });
 
     // Increment download count and track timestamp
     file.downloadCount += 1;
@@ -185,7 +201,11 @@ export const getFilesByFolder = async (req, res) => {
     const { folderId } = req.query;
     if (!folderId) return res.status(400).json({ message: "Folder ID required" });
 
-    const files = await File.find({ ownerId: req.user._id, folderId }).sort({ createdAt: -1 });
+    // Check if user has permission to view the folder
+    const hasPermission = await checkPermission(req.user._id, folderId, 'folder', 'viewer');
+    if (!hasPermission) return res.status(403).json({ message: "Access denied" });
+
+    const files = await File.find({ folderId }).sort({ createdAt: -1 });
     res.json(files);
   } catch (error) {
     res.status(500).json({ message: error.message });
