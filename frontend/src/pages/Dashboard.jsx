@@ -231,7 +231,7 @@
 
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import API, { searchUsers } from "../utils/api";
+import API from "../utils/api";
 import { AuthContext } from "../context/AuthContext";
 
 const Dashboard = () => {
@@ -249,8 +249,11 @@ const Dashboard = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [shareResource, setShareResource] = useState(null); // { type: 'file'|'folder', id, name }
+  const [shareResource, setShareResource] = useState(null);
   const [permissions, setPermissions] = useState([]);
+  const [filePermissions, setFilePermissions] = useState({});
+  const [expandedFiles, setExpandedFiles] = useState(new Set());
+  const [resourceOwner, setResourceOwner] = useState(null);
   const [newPermissionRole, setNewPermissionRole] = useState('viewer');
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [userSearchResults, setUserSearchResults] = useState([]);
@@ -259,9 +262,34 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [storageStats, setStorageStats] = useState({
     used: 0,
-    total: 5368709120, // 5GB in bytes
+    total: 5368709120,
     filesCount: 0
   });
+
+  // Fetch permissions for a specific file
+  const fetchFilePermissions = async (fileId) => {
+    try {
+      const res = await API.get(`/permissions/file/${fileId}`);
+      setFilePermissions(prev => ({ ...prev, [fileId]: res.data }));
+    } catch (error) {
+      console.error("Failed to fetch file permissions", error);
+    }
+  };
+
+  const toggleFilePermissions = (fileId) => {
+    setExpandedFiles(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(fileId)) {
+        newSet.delete(fileId);
+      } else {
+        newSet.add(fileId);
+        if (!filePermissions[fileId]) {
+          fetchFilePermissions(fileId);
+        }
+      }
+      return newSet;
+    });
+  };
 
   useEffect(() => {
     if (user) {
@@ -282,7 +310,7 @@ const Dashboard = () => {
     const searchUsersDebounced = async () => {
       if (userSearchQuery.length >= 2) {
         try {
-          const res = await searchUsers(userSearchQuery);
+          const res = await API.get(`/users/search?q=${userSearchQuery}`);
           setUserSearchResults(res.data);
           setShowUserDropdown(true);
         } catch (error) {
@@ -396,7 +424,6 @@ const Dashboard = () => {
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    // You can add a toast notification here
   };
 
   const formatFileSize = (bytes) => {
@@ -415,12 +442,23 @@ const Dashboard = () => {
   const openShareModal = (type, id, name) => {
     setShareResource({ type, id, name });
     setPermissions([]);
+    setResourceOwner(null);
     setSelectedUser(null);
     setUserSearchQuery('');
     setShowUserDropdown(false);
     setNewPermissionRole('viewer');
+    fetchResource(id, type);
     fetchPermissions(id, type);
     setIsShareModalOpen(true);
+  };
+
+  const fetchResource = async (resourceId, resourceType) => {
+    try {
+      const res = await API.get(`/${resourceType}s/${resourceId}`);
+      setResourceOwner(res.data.ownerId);
+    } catch (error) {
+      console.error("Failed to fetch resource", error);
+    }
   };
 
   const fetchPermissions = async (resourceId, resourceType) => {
@@ -464,35 +502,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      {/* <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-gray-600">Welcome back, {user?.name}</p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setIsCreateFolderModalOpen(true)}
-                className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-              >
-                New Folder
-              </button>
-              <button
-                onClick={() => setIsUploadModalOpen(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center space-x-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span>Upload File</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header> */}
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Storage Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -662,75 +671,111 @@ const Dashboard = () => {
                     {files.length > 0 ? (
                       <div className="space-y-4">
                         {files.map((file) => (
-                          <div key={file._id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                            <div className="flex items-center space-x-4 flex-1 min-w-0">
-                              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900 truncate">{file.originalName}</p>
-                                <div className="flex items-center space-x-4 text-xs text-gray-500 mt-1">
-                                  <span>{formatFileSize(file.size)}</span>
-                                  <span>•</span>
-                                  <span>{new Date(file.createdAt).toLocaleDateString()}</span>
-                                  {file.expiresAt && (
-                                    <>
-                                      <span>•</span>
-                                      <span className="text-orange-600">
-                                        Expires {new Date(file.expiresAt).toLocaleDateString()}
-                                      </span>
-                                    </>
-                                  )}
+                          <div key={file._id}>
+                            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                              <div className="flex items-center space-x-4 flex-1 min-w-0">
+                                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  </svg>
                                 </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-gray-900 truncate">{file.originalName}</p>
+                                  <div className="flex items-center space-x-4 text-xs text-gray-500 mt-1">
+                                    <span>{formatFileSize(file.size)}</span>
+                                    <span>•</span>
+                                    <span>{new Date(file.createdAt).toLocaleDateString()}</span>
+                                    {file.expiresAt && (
+                                      <>
+                                        <span>•</span>
+                                        <span className="text-orange-600">
+                                          Expires {new Date(file.expiresAt).toLocaleDateString()}
+                                        </span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center space-x-3">
+                                <div className="relative flex-1 min-w-0 max-w-xs">
+                                  <input
+                                    type="text"
+                                    readOnly
+                                    value={getSecureLink(file._id)}
+                                    className="w-full px-3 py-2 pr-20 text-sm border border-gray-300 rounded-lg bg-gray-50 truncate"
+                                    onFocus={(e) => e.target.select()}
+                                  />
+                                  <button
+                                    onClick={() => copyToClipboard(getSecureLink(file._id))}
+                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 transition-colors"
+                                  >
+                                    Copy
+                                  </button>
+                                </div>
+                                
+                                {file.passwordProtected && (
+                                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                  </div>
+                                )}
+
+                                <button
+                                  onClick={() => openShareModal('file', file._id, file.originalName)}
+                                  className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center hover:bg-orange-200 transition-colors"
+                                  title="Share File"
+                                >
+                                  <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                                  </svg>
+                                </button>
+
+                                <button
+                                  onClick={() => navigate(`/analytics/file/${file._id}`)}
+                                  className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center hover:bg-purple-200 transition-colors"
+                                  title="View Analytics"
+                                >
+                                  <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                  </svg>
+                                </button>
                               </div>
                             </div>
                             
-                            <div className="flex items-center space-x-3">
-                              <div className="relative flex-1 min-w-0 max-w-xs">
-                                <input
-                                  type="text"
-                                  readOnly
-                                  value={getSecureLink(file._id)}
-                                  className="w-full px-3 py-2 pr-20 text-sm border border-gray-300 rounded-lg bg-gray-50 truncate"
-                                  onFocus={(e) => e.target.select()}
-                                />
-                                <button
-                                  onClick={() => copyToClipboard(getSecureLink(file._id))}
-                                  className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 transition-colors"
-                                >
-                                  Copy
-                                </button>
-                              </div>
+                            {/* Permissions toggle button */}
+                            <div className="mt-2 pl-16">
+                              <button
+                                onClick={() => toggleFilePermissions(file._id)}
+                                className="text-sm text-blue-600 hover:underline focus:outline-none"
+                                aria-expanded={expandedFiles.has(file._id)}
+                                aria-controls={`permissions-${file._id}`}
+                              >
+                                {expandedFiles.has(file._id) ? 'Hide Permissions' : 'Show Permissions'}
+                              </button>
                               
-                              {file.passwordProtected && (
-                                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                  </svg>
+                              {/* Permissions list */}
+                              {expandedFiles.has(file._id) && filePermissions[file._id] && (
+                                <div
+                                  id={`permissions-${file._id}`}
+                                  className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-700"
+                                >
+                                  {filePermissions[file._id].length > 0 ? (
+                                    filePermissions[file._id].map((permission) => (
+                                      <div key={permission._id} className="mb-1">
+                                        <span className="font-medium">{permission.userId?.name || permission.userId?.email || permission.userId}</span>
+                                        <span className="ml-2 capitalize text-gray-600">({permission.role})</span>
+                                        <div className="text-xs text-gray-400">
+                                          Granted by {permission.grantedBy?.name || permission.grantedBy?.email || permission.grantedBy}
+                                        </div>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <div className="text-gray-500">No permissions granted</div>
+                                  )}
                                 </div>
                               )}
-
-                              <button
-                                onClick={() => openShareModal('file', file._id, file.originalName)}
-                                className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center hover:bg-orange-200 transition-colors"
-                                title="Share File"
-                              >
-                                <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-                                </svg>
-                              </button>
-
-                              <button
-                                onClick={() => navigate(`/analytics/file/${file._id}`)}
-                                className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center hover:bg-purple-200 transition-colors"
-                                title="View Analytics"
-                              >
-                                <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                </svg>
-                              </button>
                             </div>
                           </div>
                         ))}
@@ -772,7 +817,7 @@ const Dashboard = () => {
 
       {/* Create Folder Modal */}
       {isCreateFolderModalOpen && (
-        <div className="fixed inset-0 bg-grey-100 bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md">
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Create New Folder</h3>
             <div className="space-y-4">
@@ -814,9 +859,9 @@ const Dashboard = () => {
 
       {/* Upload File Modal */}
       {isUploadModalOpen && (
-        <div className="fixed inset-0  bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md border border-gray-200">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4 ">Upload File</h3>
+        <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md border border-gray-300">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Upload File</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -907,6 +952,7 @@ const Dashboard = () => {
                       <div>
                         <p className="text-sm font-medium text-gray-900">{permission.userId?.name || permission.userId?.email || permission.userId}</p>
                         <p className="text-xs text-gray-500 capitalize">{permission.role}</p>
+                        <p className="text-xs text-gray-400">Granted by {permission.grantedBy?.name || permission.grantedBy?.email || permission.grantedBy}</p>
                       </div>
                       <button
                         onClick={() => handleRevokePermission(permission._id)}

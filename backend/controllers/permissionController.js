@@ -117,7 +117,7 @@ export const getPermissions = async (req, res) => {
     const permissions = await Permission.find({
       resourceId,
       resourceType
-    }).populate('userId', 'name email');
+    }).populate('userId', 'name email').populate('grantedBy', 'name email');
 
     res.json(permissions);
   } catch (error) {
