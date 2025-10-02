@@ -65,9 +65,9 @@ const FileView = () => {
     try {
       const res = await API.get(downloadUrl, { responseType: 'blob' });
 
-      // Extract filename from Content-Disposition header
+      // Use original filename from file data, fallback to header extraction
+      let filename = file ? file.originalName : 'file';
       const contentDisposition = res.headers['content-disposition'];
-      let filename = 'file';
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
         if (filenameMatch && filenameMatch[1]) {
@@ -122,7 +122,7 @@ const FileView = () => {
           View File
         </button>
       )}
-      {downloadUrl && hasDownloadPermission() && (
+      {downloadUrl && (
         <button
           onClick={handleDownload}
           className="bg-blue-600 text-white px-4 py-2 rounded w-full"

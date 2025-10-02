@@ -101,7 +101,7 @@ export const getPermissions = async (req, res) => {
   try {
     const { resourceId, resourceType } = req.params;
 
-    // Check if resource exists and user is owner
+    // Check if resource exists
     let resource;
     if (resourceType === 'folder') {
       resource = await Folder.findById(resourceId);
@@ -112,7 +112,12 @@ export const getPermissions = async (req, res) => {
     }
 
     if (!resource) return res.status(404).json({ message: "Resource not found" });
-    if (!resource.ownerId.equals(req.user._id)) return res.status(403).json({ message: "Forbidden" });
+
+    // Check if user is owner or has permission
+    if (!resource.ownerId.equals(req.user._id)) {
+      const hasPermission = await checkPermission(req.user._id, resourceId, resourceType, 'viewer');
+      if (!hasPermission) return res.status(403).json({ message: "Forbidden" });
+    }
 
     const permissions = await Permission.find({
       resourceId,

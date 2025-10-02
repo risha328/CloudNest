@@ -24,10 +24,21 @@ export const uploadFile = async (req, res) => {
       passwordHash = await bcrypt.hash(password, salt);
     }
 
+    const originalName = req.file.originalname;
+    let finalName = originalName;
+    // Ensure filename has extension
+    if (!path.extname(originalName)) {
+      const mime = require('mime-types');
+      const ext = mime.extension(req.file.mimetype);
+      if (ext) {
+        finalName = originalName + '.' + ext;
+      }
+    }
+
     const file = await File.create({
       ownerId: req.user._id,
       folderId: folderId || null,
-      originalName: req.file.originalname,
+      originalName: finalName,
       storageName: req.file.filename,
       path: req.file.path,
       mimeType: req.file.mimetype,
@@ -113,8 +124,10 @@ export const accessFile = async (req, res) => {
     let downloadUrl = null;
 
     if (hasViewerPermission) {
-      // Viewer or higher: can view inline and download
       viewUrl = `/files/${file._id}/view`;
+    }
+
+    if (hasDownloadPermission) {
       downloadUrl = `/files/${file._id}/download`;
     }
 
@@ -157,8 +170,8 @@ export const downloadFile = async (req, res) => {
     if (!file) return res.status(404).json({ message: "File not found" });
     if (file.blocked) return res.status(403).json({ message: "File is blocked" });
 
-    // Check permissions - viewers and above can download
-    const hasPermission = await checkPermission(req.user._id, file._id, 'file', 'viewer');
+    // Check permissions - downloaders and above can download
+    const hasPermission = await checkPermission(req.user._id, file._id, 'file', 'downloader');
     if (!hasPermission) return res.status(403).json({ message: "Download denied" });
 
     // Increment download count and track timestamp
@@ -166,6 +179,8 @@ export const downloadFile = async (req, res) => {
     file.downloadTimestamps.push(new Date());
     await file.save();
 
+    // Set correct Content-Type
+    res.setHeader('Content-Type', file.mimeType);
     res.download(path.resolve(file.path), file.originalName);
   } catch (error) {
     res.status(500).json({ message: error.message });
