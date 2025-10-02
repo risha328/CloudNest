@@ -18,14 +18,23 @@ const Header = () => {
 
           {/* Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <a href="#features" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+            <a href="/features" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
               Features
             </a>
-            <a href="#how-it-works" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+            <a href="/how-it-works" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
               How It Works
             </a>
-            <a href="#security" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+            <a href="/security" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
               Security
+            </a>
+            <a href="/pricing" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+              Pricing
+            </a>
+            <a href="/blog" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+              Blog
+            </a>
+            <a href="/contact" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+              Contact
             </a>
           </nav>
 
