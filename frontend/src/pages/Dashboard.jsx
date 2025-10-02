@@ -260,6 +260,26 @@ const Dashboard = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const searchUsersDebounced = async () => {
+      if (userSearchQuery.length >= 2) {
+        try {
+          const res = await API.get(`/users/search?query=${encodeURIComponent(userSearchQuery)}`);
+          setUserSearchResults(res.data);
+          setShowUserDropdown(true);
+        } catch (error) {
+          console.error("Failed to search users", error);
+        }
+      } else {
+        setUserSearchResults([]);
+        setShowUserDropdown(false);
+      }
+    };
+    const timeoutId = setTimeout(searchUsersDebounced, 300);
+    return () => clearTimeout(timeoutId);
+  }, [userSearchQuery]);
+  const [downloadingFileId, setDownloadingFileId] = useState(null);
   const [storageStats, setStorageStats] = useState({
     used: 0,
     total: 5368709120,
@@ -306,24 +326,7 @@ const Dashboard = () => {
     }
   }, [selectedFolder]);
 
-  useEffect(() => {
-    const searchUsersDebounced = async () => {
-      if (userSearchQuery.length >= 2) {
-        try {
-          const res = await API.get(`/users/search?q=${userSearchQuery}`);
-          setUserSearchResults(res.data);
-          setShowUserDropdown(true);
-        } catch (error) {
-          console.error("Failed to search users", error);
-        }
-      } else {
-        setUserSearchResults([]);
-        setShowUserDropdown(false);
-      }
-    };
-    const timeoutId = setTimeout(searchUsersDebounced, 300);
-    return () => clearTimeout(timeoutId);
-  }, [userSearchQuery]);
+
 
   const fetchStorageStats = async () => {
     try {
@@ -351,6 +354,8 @@ const Dashboard = () => {
     try {
       const res = await API.get("/files", { params: { folderId } });
       setFiles(res.data);
+      // Fetch permissions for all files
+      res.data.forEach(file => fetchFilePermissions(file._id));
     } catch (error) {
       console.error("Failed to fetch files", error);
     } finally {
@@ -447,19 +452,11 @@ const Dashboard = () => {
     setUserSearchQuery('');
     setShowUserDropdown(false);
     setNewPermissionRole('viewer');
-    fetchResource(id, type);
     fetchPermissions(id, type);
     setIsShareModalOpen(true);
   };
 
-  const fetchResource = async (resourceId, resourceType) => {
-    try {
-      const res = await API.get(`/${resourceType}s/${resourceId}`);
-      setResourceOwner(res.data.ownerId);
-    } catch (error) {
-      console.error("Failed to fetch resource", error);
-    }
-  };
+
 
   const fetchPermissions = async (resourceId, resourceType) => {
     try {
@@ -497,6 +494,25 @@ const Dashboard = () => {
       fetchPermissions(shareResource.id, shareResource.type);
     } catch (error) {
       console.error("Failed to revoke permission", error);
+    }
+  };
+
+  const handleDownload = async (fileId, fileName) => {
+    setDownloadingFileId(fileId);
+    try {
+      const res = await API.post(`/files/${fileId}/access`, {});
+      const downloadUrl = res.data.downloadUrl;
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Failed to download file", error);
+      alert("You do not have permission to download this file or it requires a password.");
+    } finally {
+      setDownloadingFileId(null);
     }
   };
 
@@ -741,6 +757,23 @@ const Dashboard = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                   </svg>
                                 </button>
+
+                                {(user._id === file.ownerId || (filePermissions[file._id] && filePermissions[file._id].some(p => p.userId._id === user._id && (p.role === 'downloader' || p.role === 'editor')))) && (
+                                  <button
+                                    onClick={() => handleDownload(file._id, file.originalName)}
+                                    disabled={downloadingFileId === file._id}
+                                    className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center hover:bg-green-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="Download File"
+                                  >
+                                    {downloadingFileId === file._id ? (
+                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
+                                    ) : (
+                                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                      </svg>
+                                    )}
+                                  </button>
+                                )}
                               </div>
                             </div>
                             
@@ -1017,6 +1050,7 @@ const Dashboard = () => {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 >
                   <option value="viewer">Viewer</option>
+                  <option value="downloader">Downloader</option>
                   <option value="editor">Editor</option>
                 </select>
               </div>

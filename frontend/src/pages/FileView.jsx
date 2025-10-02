@@ -1,23 +1,48 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
 import API from "../utils/api";
+import { AuthContext } from "../context/AuthContext";
 
 const FileView = () => {
+  const { user } = useContext(AuthContext);
   const { id: fileId } = useParams();
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [viewUrl, setViewUrl] = useState("");
+  const [downloadUrl, setDownloadUrl] = useState("");
   const [fileBlobUrl, setFileBlobUrl] = useState("");
   const [fileName, setFileName] = useState("");
+  const [file, setFile] = useState(null);
+  const [filePermissions, setFilePermissions] = useState([]);
 
   useEffect(() => {
-    // Optionally, fetch file metadata if public, but for now, just handle access
+    fetchFile();
+    fetchFilePermissions();
   }, [fileId]);
+
+  const fetchFile = async () => {
+    try {
+      const res = await API.get(`/files/${fileId}`);
+      setFile(res.data);
+    } catch (error) {
+      console.error("Failed to fetch file", error);
+    }
+  };
+
+  const fetchFilePermissions = async () => {
+    try {
+      const res = await API.get(`/permissions/file/${fileId}`);
+      setFilePermissions(res.data);
+    } catch (error) {
+      console.error("Failed to fetch file permissions", error);
+    }
+  };
 
   const handleAccess = async () => {
     try {
       const res = await API.post(`/files/${fileId}/access`, { password });
       setViewUrl(res.data.viewUrl.replace('/api', ''));
+      setDownloadUrl(res.data.downloadUrl ? res.data.downloadUrl.replace('/api', '') : null);
       setMessage("Access granted. Click view to see the file.");
     } catch (error) {
       setMessage(error.response?.data?.message || "Access failed");
@@ -34,6 +59,38 @@ const FileView = () => {
     } catch (error) {
       setMessage("Failed to load file: " + (error.response?.data?.message || error.message));
     }
+  };
+
+  const handleDownload = async () => {
+    try {
+      const res = await API.get(downloadUrl, { responseType: 'blob' });
+
+      // Extract filename from Content-Disposition header
+      const contentDisposition = res.headers['content-disposition'];
+      let filename = 'file';
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/['"]/g, '');
+        }
+      }
+
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      setMessage("Failed to download file: " + (error.response?.data?.message || error.message));
+    }
+  };
+
+  const hasDownloadPermission = () => {
+    if (!user || !file) return false;
+    return user._id === file.ownerId || filePermissions.some(p => p.userId._id === user._id && (p.role === 'downloader' || p.role === 'editor'));
   };
 
   return (
@@ -60,9 +117,17 @@ const FileView = () => {
       {viewUrl && !fileBlobUrl && (
         <button
           onClick={handleView}
-          className="bg-green-600 text-white px-4 py-2 rounded w-full"
+          className="bg-green-600 text-white px-4 py-2 rounded w-full mb-2"
         >
           View File
+        </button>
+      )}
+      {downloadUrl && hasDownloadPermission() && (
+        <button
+          onClick={handleDownload}
+          className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+        >
+          Download File
         </button>
       )}
       {fileBlobUrl && (

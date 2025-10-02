@@ -1,5 +1,0 @@
-- [x] Add viewFile function in backend/controllers/fileController.js to allow viewers to view files inline
-- [x] Add /:id/view route in backend/routes/fileRoutes.js
-- [x] Modify accessFile function to return viewUrl instead of downloadUrl
-- [x] Update frontend/src/pages/FileView.jsx to display "View File" button and fetch file blob for inline viewing
-- [x] Test the view functionality for viewers

@@ -106,7 +106,19 @@ export const accessFile = async (req, res) => {
     file.viewTimestamps.push(new Date());
     await file.save();
 
-    res.json({ viewUrl: `/files/${file._id}/view` });
+    const hasViewerPermission = await checkPermission(req.user._id, file._id, 'file', 'viewer');
+    const hasDownloadPermission = await checkPermission(req.user._id, file._id, 'file', 'downloader');
+
+    let viewUrl = null;
+    let downloadUrl = null;
+
+    if (hasViewerPermission) {
+      // Viewer or higher: can view inline and download
+      viewUrl = `/files/${file._id}/view`;
+      downloadUrl = `/files/${file._id}/download`;
+    }
+
+    res.json({ viewUrl, downloadUrl });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -145,8 +157,8 @@ export const downloadFile = async (req, res) => {
     if (!file) return res.status(404).json({ message: "File not found" });
     if (file.blocked) return res.status(403).json({ message: "File is blocked" });
 
-    // Check permissions - downloaders and above can download
-    const hasPermission = await checkPermission(req.user._id, file._id, 'file', 'downloader');
+    // Check permissions - viewers and above can download
+    const hasPermission = await checkPermission(req.user._id, file._id, 'file', 'viewer');
     if (!hasPermission) return res.status(403).json({ message: "Download denied" });
 
     // Increment download count and track timestamp

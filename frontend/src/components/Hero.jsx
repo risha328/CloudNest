@@ -1,5 +1,6 @@
 // src/components/Hero.jsx
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Hero = () => {
   return (
@@ -19,9 +20,9 @@ const Hero = () => {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-          <button className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors shadow-lg w-full sm:w-auto">
+          <Link to="/dashboard" className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors shadow-lg w-full sm:w-auto">
             Start Uploading Free
-          </button>
+          </Link>
           <button className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg font-semibold text-lg hover:border-blue-400 hover:text-blue-600 transition-colors w-full sm:w-auto">
             Watch Demo
           </button>
