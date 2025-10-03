@@ -2,6 +2,8 @@ import Folder from "../models/Folder.js";
 import File from "../models/File.js";
 import Permission from "../models/Permission.js";
 import { checkPermission } from "./permissionController.js";
+import fs from "fs";
+import path from "path";
 
 // Create a new folder
 export const createFolder = async (req, res) => {
@@ -51,6 +53,38 @@ export const getFolders = async (req, res) => {
     }));
 
     res.json(foldersWithCounts.sort((a, b) => b.createdAt - a.createdAt));
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Delete a folder (owner only)
+export const deleteFolder = async (req, res) => {
+  try {
+    const folder = await Folder.findById(req.params.id);
+    if (!folder) return res.status(404).json({ message: "Folder not found" });
+    if (!folder.ownerId.equals(req.user._id)) return res.status(403).json({ message: "Forbidden" });
+
+    // Find all files in the folder
+    const files = await File.find({ folderId: folder._id });
+
+    // Delete files from filesystem and database
+    for (const file of files) {
+      try {
+        fs.unlinkSync(path.resolve(file.path));
+      } catch (err) {
+        console.error(`Failed to delete file ${file.path}:`, err);
+      }
+      await file.remove();
+    }
+
+    // Delete permissions for the folder
+    await Permission.deleteMany({ resourceId: folder._id, resourceType: 'folder' });
+
+    // Delete the folder
+    await folder.remove();
+
+    res.json({ message: "Folder and all its contents deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

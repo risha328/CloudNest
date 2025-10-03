@@ -280,6 +280,8 @@ const Dashboard = () => {
     return () => clearTimeout(timeoutId);
   }, [userSearchQuery]);
   const [downloadingFileId, setDownloadingFileId] = useState(null);
+  const [deletingFolderId, setDeletingFolderId] = useState(null);
+  const [deletingFileId, setDeletingFileId] = useState(null);
   const [storageStats, setStorageStats] = useState({
     used: 0,
     total: 5368709120,
@@ -516,6 +518,46 @@ const Dashboard = () => {
     }
   };
 
+  const handleDeleteFolder = async (folderId, folderName) => {
+    if (!window.confirm(`Are you sure you want to delete the folder "${folderName}" and all its files? This action cannot be undone.`)) {
+      return;
+    }
+
+    setDeletingFolderId(folderId);
+    try {
+      await API.delete(`/folders/${folderId}`);
+      setFolders(folders.filter(folder => folder._id !== folderId));
+      if (selectedFolder && selectedFolder._id === folderId) {
+        setSelectedFolder(null);
+        setFiles([]);
+      }
+      fetchStorageStats();
+    } catch (error) {
+      console.error("Failed to delete folder", error);
+      alert("Failed to delete folder. You may not have permission or the folder may not exist.");
+    } finally {
+      setDeletingFolderId(null);
+    }
+  };
+
+  const handleDeleteFile = async (fileId, fileName) => {
+    if (!window.confirm(`Are you sure you want to delete the file "${fileName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    setDeletingFileId(fileId);
+    try {
+      await API.delete(`/files/${fileId}`);
+      setFiles(files.filter(file => file._id !== fileId));
+      fetchStorageStats();
+    } catch (error) {
+      console.error("Failed to delete file", error);
+      alert("Failed to delete file. You may not have permission or the file may not exist.");
+    } finally {
+      setDeletingFileId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -613,18 +655,39 @@ const Dashboard = () => {
                       <p className="text-sm font-medium text-gray-900 truncate">{folder.name}</p>
                       <p className="text-xs text-gray-500">{folder.fileCount || 0} files</p>
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openShareModal('folder', folder._id, folder.name);
-                      }}
-                      className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
-                      title="Share Folder"
-                    >
-                      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-                      </svg>
-                    </button>
+                    <div className="flex space-x-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openShareModal('folder', folder._id, folder.name);
+                        }}
+                        className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+                        title="Share Folder"
+                      >
+                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                        </svg>
+                      </button>
+                      {user._id === folder.ownerId && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteFolder(folder._id, folder.name);
+                          }}
+                          disabled={deletingFolderId === folder._id}
+                          className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Delete Folder"
+                        >
+                          {deletingFolderId === folder._id ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                          ) : (
+                            <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          )}
+                        </button>
+                      )}
+                    </div>
                   </button>
                 ))}
                 
@@ -770,6 +833,23 @@ const Dashboard = () => {
                                     ) : (
                                       <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                      </svg>
+                                    )}
+                                  </button>
+                                )}
+
+                                {(user._id === file.ownerId || (filePermissions[file._id] && filePermissions[file._id].some(p => p.userId._id === user._id && p.role === 'editor'))) && (
+                                  <button
+                                    onClick={() => handleDeleteFile(file._id, file.originalName)}
+                                    disabled={deletingFileId === file._id}
+                                    className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="Delete File"
+                                  >
+                                    {deletingFileId === file._id ? (
+                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                                    ) : (
+                                      <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                       </svg>
                                     )}
                                   </button>

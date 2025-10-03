@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import File from "../models/File.js";
 import Folder from "../models/Folder.js";
+import Permission from "../models/Permission.js";
 import { checkPermission } from "./permissionController.js";
 
 // Upload file
@@ -187,19 +188,34 @@ export const downloadFile = async (req, res) => {
   }
 };
 
-// Delete file (owner only)
+// Delete file (owner or editor)
 export const deleteFile = async (req, res) => {
   try {
+    console.log('Delete file request:', { userId: req.user._id, fileId: req.params.id });
     const file = await File.findById(req.params.id);
-    if (!file) return res.status(404).json({ message: "File not found" });
-    if (!file.ownerId.equals(req.user._id)) return res.status(403).json({ message: "Forbidden" });
+    if (!file) {
+      console.log('File not found');
+      return res.status(404).json({ message: "File not found" });
+    }
+    console.log('File found:', { ownerId: file.ownerId, ownerIdType: typeof file.ownerId, userId: req.user._id, userIdType: typeof req.user._id });
+
+    // Check if user is owner
+    if (!file.ownerId.equals(req.user._id)) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
 
     // Delete file from filesystem
-    fs.unlinkSync(path.resolve(file.path));
-    await file.remove();
+    try {
+      fs.unlinkSync(path.resolve(file.path));
+    } catch (unlinkError) {
+      console.error('Error deleting file from filesystem:', unlinkError);
+      // Continue to delete from DB even if file deletion fails
+    }
+    await file.deleteOne();
 
     res.json({ message: "File deleted successfully" });
   } catch (error) {
+    console.error('Delete file error:', error);
     res.status(500).json({ message: error.message });
   }
 };
