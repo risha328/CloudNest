@@ -1,11 +1,12 @@
 // src/components/Header.jsx
 import React, { useContext, useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
   const [showDropdown, setShowDropdown] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.log('Navbar user state changed:', user);
@@ -66,6 +67,7 @@ const Navbar = () => {
                     onClick={() => {
                       logout();
                       setShowDropdown(false);
+                      navigate("/");
                     }}
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   >

@@ -1,16 +1,20 @@
 // src/pages/Features.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 const Features = () => {
   const [activeCategory, setActiveCategory] = useState('security');
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   const categories = [
-    { id: 'security', name: 'Security', icon: '🛡️' },
-    { id: 'storage', name: 'Storage', icon: '💾' },
-    { id: 'sharing', name: 'Sharing', icon: '🔗' },
-    { id: 'productivity', name: 'Productivity', icon: '⚡' },
-    { id: 'management', name: 'Management', icon: '📊' }
+    { id: 'security', name: 'Security & Sharing', icon: '🛡️', description: 'Advanced protection and sharing features' },
+    { id: 'storage', name: 'Storage', icon: '💾', description: 'Scalable cloud storage' },
+    { id: 'productivity', name: 'Productivity', icon: '⚡', description: 'Efficiency tools' },
+    { id: 'management', name: 'Management', icon: '📊', description: 'Admin controls' }
   ];
 
   const features = {
@@ -22,9 +26,10 @@ const Features = () => {
         details: [
           "Unique passwords for every file",
           "Separate sharing of links and passwords",
-          "No master password vulnerability"
+          "No master password vulnerability",
+          "Custom password requirements"
         ],
-        image: "🛡️"
+        gradient: "from-blue-500 to-cyan-500"
       },
       {
         title: "End-to-End Encryption",
@@ -33,9 +38,10 @@ const Features = () => {
         details: [
           "AES-256 military-grade encryption",
           "Zero-knowledge architecture",
-          "Encryption at rest and in transit"
+          "Encryption at rest and in transit",
+          "Perfect forward secrecy"
         ],
-        image: "📡"
+        gradient: "from-cyan-500 to-blue-500"
       },
       {
         title: "Advanced Access Controls",
@@ -44,9 +50,10 @@ const Features = () => {
         details: [
           "Custom expiration dates",
           "Download limits and restrictions",
-          "IP-based access controls"
+          "IP-based access controls",
+          "Geographic restrictions"
         ],
-        image: "🌐"
+        gradient: "from-blue-400 to-indigo-500"
       },
       {
         title: "Security Compliance",
@@ -55,9 +62,58 @@ const Features = () => {
         details: [
           "SOC 2 Type II compliant",
           "GDPR and HIPAA ready",
-          "Regular security audits"
+          "Regular security audits",
+          "Penetration testing"
         ],
-        image: "🏢"
+        gradient: "from-indigo-500 to-blue-500"
+      },
+      {
+        title: "Secure Link Sharing",
+        description: "Generate secure, expirable links that can be shared with specific individuals or groups.",
+        icon: "🔗",
+        details: [
+          "Password-protected links",
+          "Custom expiration dates",
+          "Download count limits",
+          "Access notifications"
+        ],
+        gradient: "from-blue-500 to-cyan-500"
+      },
+      {
+        title: "Team Collaboration",
+        description: "Share files securely with team members while maintaining full control over access.",
+        icon: "👨‍💼",
+        details: [
+          "Team member management",
+          "Role-based permissions",
+          "Collaboration analytics",
+          "Activity tracking"
+        ],
+        gradient: "from-cyan-500 to-blue-500"
+      },
+      {
+        title: "Public Sharing Options",
+        description: "Create public access links with customizable security settings for broader distribution.",
+        icon: "🌍",
+        details: [
+          "Public link generation",
+          "View-only access options",
+          "Embed capabilities",
+          "Brand customization"
+        ],
+        gradient: "from-blue-400 to-indigo-500"
+      },
+      {
+        title: "Advanced Sharing Analytics",
+        description: "Track how your shared files are being accessed and used in real-time.",
+        icon: "📊",
+        details: [
+          "Real-time access logs",
+          "Download analytics",
+          "Geographic insights",
+          "Usage patterns"
+        ],
+        gradient: "from-indigo-500 to-blue-500"
       }
     ],
     storage: [
@@ -68,9 +124,10 @@ const Features = () => {
         details: [
           "All file formats supported",
           "No file type restrictions",
-          "Automatic format detection"
+          "Automatic format detection",
+          "File type validation"
         ],
-        image: "🎯"
+        gradient: "from-blue-500 to-cyan-500"
       },
       {
         title: "Scalable Cloud Storage",
@@ -79,9 +136,10 @@ const Features = () => {
         details: [
           "Automatic scaling",
           "99.9% uptime SLA",
-          "Global CDN distribution"
+          "Global CDN distribution",
+          "Multi-region replication"
         ],
-        image: "📈"
+        gradient: "from-cyan-500 to-blue-500"
       },
       {
         title: "Smart File Organization",
@@ -90,9 +148,10 @@ const Features = () => {
         details: [
           "AI-powered tagging",
           "Advanced search filters",
-          "Custom folder structures"
+          "Custom folder structures",
+          "Metadata extraction"
         ],
-        image: "🔍"
+        gradient: "from-blue-400 to-indigo-500"
       },
       {
         title: "Automatic Backups",
@@ -101,55 +160,10 @@ const Features = () => {
         details: [
           "Redundant storage",
           "Point-in-time recovery",
-          "Disaster recovery protocols"
+          "Disaster recovery protocols",
+          "Version history"
         ],
-        image: "🔄"
-      }
-    ],
-    sharing: [
-      {
-        title: "Secure Link Sharing",
-        description: "Generate secure, expirable links that can be shared with specific individuals or groups.",
-        icon: "🔗",
-        details: [
-          "Password-protected links",
-          "Custom expiration dates",
-          "Download count limits"
-        ],
-        image: "📤"
-      },
-      {
-        title: "Team Collaboration",
-        description: "Share files securely with team members while maintaining full control over access.",
-        icon: "👨‍💼",
-        details: [
-          "Team member management",
-          "Role-based permissions",
-          "Collaboration analytics"
-        ],
-        image: "🤝"
-      },
-      {
-        title: "Public Sharing Options",
-        description: "Create public access links with customizable security settings for broader distribution.",
-        icon: "🌍",
-        details: [
-          "Public link generation",
-          "View-only access options",
-          "Embed capabilities"
-        ],
-        image: "📢"
-      },
-      {
-        title: "Advanced Sharing Analytics",
-        description: "Track how your shared files are being accessed and used in real-time.",
-        icon: "📊",
-        details: [
-          "Real-time access logs",
-          "Download analytics",
-          "Geographic insights"
-        ],
-        image: "📍"
+        gradient: "from-indigo-500 to-blue-500"
       }
     ],
     productivity: [
@@ -160,9 +174,10 @@ const Features = () => {
         details: [
           "Drag-and-drop uploads",
           "Bulk password setting",
-          "Batch sharing operations"
+          "Batch sharing operations",
+          "Progress tracking"
         ],
-        image: "🚀"
+        gradient: "from-blue-500 to-cyan-500"
       },
       {
         title: "File Previews",
@@ -171,9 +186,10 @@ const Features = () => {
         details: [
           "Image and video previews",
           "Document text extraction",
-          "Audio file streaming"
+          "Audio file streaming",
+          "Multi-page document support"
         ],
-        image: "📺"
+        gradient: "from-cyan-500 to-blue-500"
       },
       {
         title: "Automated Workflows",
@@ -182,9 +198,10 @@ const Features = () => {
         details: [
           "Custom automation rules",
           "API integrations",
-          "Scheduled operations"
+          "Scheduled operations",
+          "Conditional triggers"
         ],
-        image: "🔄"
+        gradient: "from-blue-400 to-indigo-500"
       },
       {
         title: "Mobile Optimization",
@@ -193,9 +210,10 @@ const Features = () => {
         details: [
           "Progressive web app",
           "Mobile-optimized interface",
-          "Offline capabilities"
+          "Offline capabilities",
+          "Touch-friendly design"
         ],
-        image: "🌐"
+        gradient: "from-indigo-500 to-blue-500"
       }
     ],
     management: [
@@ -206,9 +224,10 @@ const Features = () => {
         details: [
           "Real-time activity feed",
           "Storage usage analytics",
-          "Security status overview"
+          "Security status overview",
+          "Performance metrics"
         ],
-        image: "🎛️"
+        gradient: "from-blue-500 to-cyan-500"
       },
       {
         title: "Advanced User Management",
@@ -217,9 +236,10 @@ const Features = () => {
         details: [
           "Role-based access control",
           "Team hierarchy management",
-          "User activity monitoring"
+          "User activity monitoring",
+          "Access reviews"
         ],
-        image: "🏢"
+        gradient: "from-cyan-500 to-blue-500"
       },
       {
         title: "Comprehensive Analytics",
@@ -228,9 +248,10 @@ const Features = () => {
         details: [
           "Usage analytics dashboard",
           "Security event logging",
-          "Custom report generation"
+          "Custom report generation",
+          "Export capabilities"
         ],
-        image: "🔍"
+        gradient: "from-blue-400 to-indigo-500"
       },
       {
         title: "API & Integrations",
@@ -239,147 +260,82 @@ const Features = () => {
         details: [
           "RESTful API access",
           "Webhook support",
-          "Third-party integrations"
+          "Third-party integrations",
+          "Custom development"
         ],
-        image: "🛠️"
+        gradient: "from-indigo-500 to-blue-500"
       }
     ]
   };
 
-  const pricingPlans = [
-    {
-      name: "Starter",
-      price: "$0",
-      period: "forever",
-      features: [
-        "5GB total storage",
-        "Basic file password protection",
-        "Standard encryption",
-        "30-day file retention",
-        "Community support"
-      ],
-      cta: "Get Started",
-      popular: false
-    },
-    {
-      name: "Professional",
-      price: "$9",
-      period: "per month",
-      features: [
-        "100GB total storage",
-        "Advanced password protection",
-        "AES-256 encryption",
-        "Unlimited file retention",
-        "Custom expiration dates",
-        "Priority support",
-        "Basic analytics"
-      ],
-      cta: "Start Free Trial",
-      popular: true
-    },
-    {
-      name: "Enterprise",
-      price: "$29",
-      period: "per month",
-      features: [
-        "1TB total storage",
-        "All Professional features",
-        "Team management",
-        "Advanced security policies",
-        "SAML/SSO integration",
-        "Custom branding",
-        "Advanced analytics",
-        "API access",
-        "Dedicated support"
-      ],
-      cta: "Contact Sales",
-      popular: false
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      {/* <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <Link to="/" className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center shadow-lg">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-                </svg>
-              </div>
-              <span className="text-2xl font-bold text-gray-900">CloudNest</span>
-            </Link>
-            <nav className="hidden md:flex space-x-8">
-              <Link to="/" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
-                Home
-              </Link>
-              <Link to="/features" className="text-blue-600 font-medium">
-                Features
-              </Link>
-              <Link to="/pricing" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
-                Pricing
-              </Link>
-              <Link to="/blog" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
-                Blog
-              </Link>
-              <Link to="/contact" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
-                Contact
-              </Link>
-            </nav>
-            <div className="flex items-center space-x-4">
-              <Link to="/login" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
-                Sign In
-              </Link>
-              <Link to="/signup" className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm">
-                Get Started
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header> */}
-
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            Powerful Features for Secure File Management
-          </h1>
-          <p className="text-xl text-blue-100 max-w-3xl mx-auto mb-8">
-            Discover how CloudNest combines enterprise-grade security with intuitive file management 
-            to protect your most important files.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link 
-              to="/signup" 
-              className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors shadow-lg"
-            >
-              Start Free Trial
-            </Link>
-            <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-600 transition-colors">
-              Watch Demo
-            </button>
+      <section className="relative py-20 bg-gradient-to-r from-blue-500 to-cyan-500 text-white overflow-hidden">
+        <div className="absolute inset-0 bg-white/10"></div>
+        <div className="absolute top-0 left-0 w-full h-full">
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/20 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-cyan-300/30 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-blue-300/30 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className={`transition-all duration-1000 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+            <h1 className="text-5xl md:text-6xl font-bold mb-6">
+              Powerful Features for{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-100">
+                Secure File Management
+              </span>
+            </h1>
+            <p className="text-xl text-blue-100 max-w-3xl mx-auto mb-8 leading-relaxed">
+              Discover how CloudNest combines enterprise-grade security with intuitive file management 
+              to protect your most important files with individual password protection.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link 
+                to="/signup" 
+                className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-50 transition-all duration-300 shadow-2xl transform hover:scale-105"
+              >
+                Start Free Trial
+              </Link>
+              <button className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white/20 transition-all duration-300 backdrop-blur-sm">
+                Watch Demo
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Category Navigation */}
-      <section className="py-8 bg-gray-50 border-b border-gray-200 sticky top-16 z-40">
+      <section className="py-12 bg-white border-b border-blue-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Explore Our Features
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Comprehensive tools designed to secure, manage, and share your files with confidence
+            </p>
+          </div>
+          
           <div className="flex flex-wrap justify-center gap-4">
             {categories.map((category) => (
               <button
                 key={category.id}
                 onClick={() => setActiveCategory(category.id)}
-                className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all ${
+                className={`flex flex-col items-center p-6 rounded-2xl min-w-[140px] transition-all duration-300 border-2 ${
                   activeCategory === category.id
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 border-transparent transform scale-105'
+                    : 'bg-white text-gray-700 hover:bg-blue-50 border-blue-100 hover:border-blue-300'
                 }`}
               >
-                <span className="text-xl">{category.icon}</span>
-                <span>{category.name}</span>
+                <span className="text-3xl mb-3">{category.icon}</span>
+                <span className="font-semibold mb-1">{category.name}</span>
+                <span className={`text-xs ${
+                  activeCategory === category.id ? 'text-blue-100' : 'text-gray-500'
+                }`}>
+                  {category.description}
+                </span>
               </button>
             ))}
           </div>
@@ -387,41 +343,51 @@ const Features = () => {
       </section>
 
       {/* Features Grid */}
-      <section className="py-16">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              {categories.find(cat => cat.id === activeCategory)?.name} Features
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              {activeCategory === 'security' && 'Advanced security and sharing features to protect and distribute your sensitive files'}
+              {activeCategory === 'storage' && 'Scalable and reliable storage solutions for all your needs'}
+              {activeCategory === 'productivity' && 'Tools and features to enhance your workflow efficiency'}
+              {activeCategory === 'management' && 'Comprehensive management and analytics for administrators'}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {features[activeCategory].map((feature, index) => (
-              <div key={index} className="bg-white rounded-2xl p-8 hover:shadow-xl transition-all duration-300 border border-gray-200">
+              <div 
+                key={index} 
+                className="group bg-white rounded-2xl p-8 hover:shadow-2xl transition-all duration-500 border-2 border-blue-100 hover:border-blue-300 transform hover:scale-105"
+              >
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex items-center space-x-4">
-                    <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-2xl">
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${feature.gradient} flex items-center justify-center text-2xl text-white shadow-lg`}>
                       {feature.icon}
                     </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-gray-900">{feature.title}</h3>
-                      <p className="text-gray-600 mt-2">{feature.description}</p>
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold text-gray-900 mb-3">{feature.title}</h3>
+                      <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                     </div>
-                  </div>
-                  <div className="text-4xl opacity-20">
-                    {feature.image}
                   </div>
                 </div>
                 
-                <ul className="space-y-3">
+                <ul className="space-y-4">
                   {feature.details.map((detail, detailIndex) => (
-                    <li key={detailIndex} className="flex items-center space-x-3 text-gray-700">
-                      <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>{detail}</span>
+                    <li key={detailIndex} className="flex items-center space-x-4 p-3 bg-blue-50 rounded-xl group-hover:bg-blue-100 transition-colors duration-300">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                      <span className="text-gray-700 font-medium">{detail}</span>
                     </li>
                   ))}
                 </ul>
                 
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <button className="text-blue-600 hover:text-blue-700 font-medium flex items-center space-x-2">
-                    <span>Learn more</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="mt-8 pt-6 border-t border-blue-100">
+                  <button className="text-blue-600 hover:text-blue-700 font-semibold flex items-center space-x-2 group">
+                    <span>Learn more about this feature</span>
+                    <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
@@ -433,176 +399,58 @@ const Features = () => {
       </section>
 
       {/* Stats Section */}
-      {/* <section className="py-16 bg-gray-900 text-white">
+      <section className="py-16 bg-white border-t border-b border-blue-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-4xl font-bold text-blue-400 mb-2">10K+</div>
-              <div className="text-gray-300">Active Users</div>
+            <div className="p-6">
+              <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">99.9%</div>
+              <div className="text-gray-600 font-semibold">Uptime SLA</div>
             </div>
-            <div>
-              <div className="text-4xl font-bold text-green-400 mb-2">50M+</div>
-              <div className="text-gray-300">Files Protected</div>
+            <div className="p-6">
+              <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">256-bit</div>
+              <div className="text-gray-600 font-semibold">Encryption</div>
             </div>
-            <div>
-              <div className="text-4xl font-bold text-purple-400 mb-2">99.9%</div>
-              <div className="text-gray-300">Uptime</div>
+            <div className="p-6">
+              <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">150+</div>
+              <div className="text-gray-600 font-semibold">Countries Served</div>
             </div>
-            <div>
-              <div className="text-4xl font-bold text-yellow-400 mb-2">256-bit</div>
-              <div className="text-gray-300">Encryption</div>
+            <div className="p-6">
+              <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">10M+</div>
+              <div className="text-gray-600 font-semibold">Files Secured</div>
             </div>
           </div>
         </div>
-      </section> */}
+      </section>
 
-      {/* Pricing Comparison */}
-      {/* <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Choose Your Plan
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              All plans include our core security features. Upgrade for advanced capabilities and more storage.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {pricingPlans.map((plan, index) => (
-              <div
-                key={index}
-                className={`bg-white rounded-2xl p-8 ${
-                  plan.popular
-                    ? 'border-2 border-blue-500 shadow-2xl relative'
-                    : 'border border-gray-200 shadow-lg'
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
-                
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                  <div className="flex items-baseline justify-center mb-2">
-                    <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
-                    {plan.period !== 'forever' && (
-                      <span className="text-gray-600 ml-2">/{plan.period}</span>
-                    )}
-                  </div>
-                  {plan.period === 'forever' && (
-                    <span className="text-gray-600">Free forever</span>
-                  )}
-                </div>
-
-                <ul className="space-y-4 mb-8">
-                  {plan.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center space-x-3">
-                      <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span className="text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  to={plan.name === 'Enterprise' ? '/contact' : '/signup'}
-                  className={`w-full block text-center py-3 px-6 rounded-lg font-semibold transition-colors ${
-                    plan.popular
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                      : 'bg-gray-900 hover:bg-gray-800 text-white'
-                  }`}
-                >
-                  {plan.cta}
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section> */}
-
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-blue-800">
+      {/* Final CTA */}
+      <section className="py-20 bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Ready to Secure Your Files?
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            Ready to Experience CloudNest?
           </h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of users who trust CloudNest with their sensitive files. 
-            Start with our free plan and upgrade when you're ready.
+          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Join thousands of businesses and individuals who trust CloudNest with their sensitive files. 
+            Get started with our free plan today.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/signup"
-              className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors shadow-lg"
+              className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-50 transition-all duration-300 shadow-2xl transform hover:scale-105"
             >
               Start Free Trial
             </Link>
             <Link
               to="/contact"
-              className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-600 transition-colors"
+              className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white/20 transition-all duration-300 backdrop-blur-sm"
             >
               Schedule Demo
             </Link>
           </div>
-          <p className="text-blue-200 mt-4 text-sm">
-            No credit card required • 14-day free trial on paid plans
+          <p className="text-blue-100 mt-6 text-sm">
+            No credit card required • 14-day free trial on paid plans • Cancel anytime
           </p>
         </div>
       </section>
-
-      {/* Footer */}
-      {/* <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="col-span-1 md:col-span-2">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-                  </svg>
-                </div>
-                <span className="text-2xl font-bold">CloudNest</span>
-              </div>
-              <p className="text-gray-400 mb-4 max-w-md">
-                Enterprise-grade secure file storage with individual password protection for every file.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase mb-4">
-                Product
-              </h3>
-              <ul className="space-y-3">
-                <li><Link to="/features" className="text-gray-300 hover:text-white transition-colors">Features</Link></li>
-                <li><Link to="/pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link to="/security" className="text-gray-300 hover:text-white transition-colors">Security</Link></li>
-                <li><Link to="/api" className="text-gray-300 hover:text-white transition-colors">API</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase mb-4">
-                Company
-              </h3>
-              <ul className="space-y-3">
-                <li><Link to="/about" className="text-gray-300 hover:text-white transition-colors">About</Link></li>
-                <li><Link to="/blog" className="text-gray-300 hover:text-white transition-colors">Blog</Link></li>
-                <li><Link to="/careers" className="text-gray-300 hover:text-white transition-colors">Careers</Link></li>
-                <li><Link to="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-12 pt-8 border-t border-gray-700 text-center">
-            <p className="text-gray-400 text-sm">
-              © 2024 CloudNest. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer> */}
     </div>
   );
 };
