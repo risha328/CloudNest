@@ -206,9 +206,13 @@ export const deleteFile = async (req, res) => {
 
     // Delete file from filesystem
     try {
-      fs.unlinkSync(path.resolve(file.path));
+      if (fs.existsSync(path.resolve(file.path))) {
+        fs.unlinkSync(path.resolve(file.path));
+      } else {
+        console.warn('File not found on filesystem, skipping unlink:', file.path);
+      }
     } catch (unlinkError) {
-      console.error('Error deleting file from filesystem:', unlinkError);
+      console.warn('Warning: Could not delete file from filesystem:', unlinkError.message);
       // Continue to delete from DB even if file deletion fails
     }
     await file.deleteOne();
