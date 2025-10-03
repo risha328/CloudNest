@@ -1,10 +1,16 @@
 import bcrypt from "bcryptjs";
 import fs from "fs";
 import path from "path";
+import ClamScan from "clamscan";
 import File from "../models/File.js";
 import Folder from "../models/Folder.js";
 import Permission from "../models/Permission.js";
 import { checkPermission } from "./permissionController.js";
+
+// Initialize ClamScan
+const clamscan = await new ClamScan().init({
+  preference: 'clamdscan' // Use clamdscan, adjust paths if needed for Windows
+});
 
 // Upload file
 export const uploadFile = async (req, res) => {
@@ -12,6 +18,21 @@ export const uploadFile = async (req, res) => {
     const { password, expiresAt, folderId } = req.body;
     if (!req.file)
         return res.status(400).json({ message: "File is required" });
+
+    // Scan file for malware
+    try {
+      const scanResult = await clamscan.scan_file(req.file.path);
+      if (scanResult.is_infected) {
+        // Delete the file
+        fs.unlinkSync(req.file.path);
+        return res.status(400).json({ message: "File contains malware and has been rejected" });
+      }
+    } catch (scanError) {
+      console.error('Scan error:', scanError);
+      // Delete file on scan failure for security
+      fs.unlinkSync(req.file.path);
+      return res.status(500).json({ message: "File scan failed, upload rejected for security" });
+    }
 
     // Check permission if uploading to a folder
     if (folderId) {

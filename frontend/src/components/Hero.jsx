@@ -1,8 +1,18 @@
 // src/components/Hero.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const Hero = () => {
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+
+  const openDemoModal = () => {
+    setIsDemoModalOpen(true);
+  };
+
+  const closeDemoModal = () => {
+    setIsDemoModalOpen(false);
+  };
+
   return (
     <section className="pt-20 pb-16 px-4 sm:px-6 lg:px-8 bg-blue-50">
       <div className="max-w-7xl mx-auto text-center">
@@ -23,7 +33,10 @@ const Hero = () => {
           <Link to="/dashboard" className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors shadow-lg w-full sm:w-auto">
             Start Uploading Free
           </Link>
-          <button className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg font-semibold text-lg hover:border-blue-400 hover:text-blue-600 transition-colors w-full sm:w-auto">
+          <button
+            onClick={openDemoModal}
+            className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg font-semibold text-lg hover:border-blue-400 hover:text-blue-600 transition-colors w-full sm:w-auto"
+          >
             Watch Demo
           </button>
         </div>
@@ -44,6 +57,37 @@ const Hero = () => {
           </div>
         </div>
       </div>
+
+      {/* Demo Modal */}
+      {isDemoModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h3 className="text-xl font-semibold text-gray-900">CloudNest Demo</h3>
+              <button
+                onClick={closeDemoModal}
+                className="text-gray-400 hover:text-gray-600 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            <div className="p-4">
+              <div className="aspect-video">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src="https://www.youtube.com/embed/dQw4w9WgXcQ" // Replace with your actual demo video URL
+                  title="CloudNest Demo"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="rounded-lg"
+                ></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
