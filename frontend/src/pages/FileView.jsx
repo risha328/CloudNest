@@ -75,7 +75,7 @@ const FileView = () => {
         }
       }
 
-      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', filename);
