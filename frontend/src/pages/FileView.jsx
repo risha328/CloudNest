@@ -63,19 +63,11 @@ const FileView = () => {
 
   const handleDownload = async () => {
     try {
-      const res = await API.get(downloadUrl, { responseType: 'blob' });
+      const res = await API.get(`/files/${fileId}/download`, { responseType: 'blob' });
 
-      // Use original filename from file data, fallback to header extraction
-      let filename = file ? file.originalName : 'file';
-      const contentDisposition = res.headers['content-disposition'];
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-        if (filenameMatch && filenameMatch[1]) {
-          filename = filenameMatch[1].replace(/['"]/g, '');
-        }
-      }
+      const filename = file ? file.originalName : 'file';
 
-      const url = window.URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: file ? file.mimeType : res.headers['content-type'] }));
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', filename);

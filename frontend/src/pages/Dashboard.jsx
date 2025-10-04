@@ -241,7 +241,9 @@ const Dashboard = () => {
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [files, setFiles] = useState([]);
   const [newFolderName, setNewFolderName] = useState("");
-  const [uploadFile, setUploadFile] = useState(null);
+  const [uploadFiles, setUploadFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState({});
+  const [isDragOver, setIsDragOver] = useState(false);
   const [password, setPassword] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
   const [uploadMessage, setUploadMessage] = useState("");
@@ -384,12 +386,30 @@ const Dashboard = () => {
   };
 
   const handleFileChange = (e) => {
-    setUploadFile(e.target.files[0]);
+    const files = Array.from(e.target.files);
+    setUploadFiles(files);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const files = Array.from(e.dataTransfer.files);
+    setUploadFiles(files);
   };
 
   const handleUpload = async () => {
-    if (!uploadFile) {
-      setUploadMessage("Please select a file to upload");
+    if (uploadFiles.length === 0) {
+      setUploadMessage("Please select files to upload");
       return;
     }
     if (!selectedFolder) {
@@ -398,27 +418,52 @@ const Dashboard = () => {
     }
 
     setLoading(true);
-    const formData = new FormData();
-    formData.append("file", uploadFile);
-    formData.append("folderId", selectedFolder._id);
-    if (password) formData.append("password", password);
-    if (expiresAt) formData.append("expiresAt", expiresAt);
+    const uploadPromises = uploadFiles.map(async (file, index) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folderId", selectedFolder._id);
+      if (password) formData.append("password", password);
+      if (expiresAt) formData.append("expiresAt", expiresAt);
+
+      try {
+        const res = await API.post("/files", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(prev => ({ ...prev, [index]: percentCompleted }));
+          },
+        });
+        return { success: true, fileName: file.name };
+      } catch (error) {
+        console.error(`Failed to upload ${file.name}:`, error);
+        return { success: false, fileName: file.name, error: error.message };
+      }
+    });
 
     try {
-      const res = await API.post("/files", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      setUploadMessage("File uploaded successfully");
-      fetchFiles(selectedFolder._id);
-      fetchStorageStats();
-      setUploadFile(null);
+      const results = await Promise.all(uploadPromises);
+      const successfulUploads = results.filter(result => result.success);
+      const failedUploads = results.filter(result => !result.success);
+
+      if (successfulUploads.length > 0) {
+        setUploadMessage(`${successfulUploads.length} file(s) uploaded successfully`);
+        fetchFiles(selectedFolder._id);
+        fetchStorageStats();
+      }
+
+      if (failedUploads.length > 0) {
+        setUploadMessage(prev => prev + `. ${failedUploads.length} file(s) failed to upload.`);
+      }
+
+      setUploadFiles([]);
       setPassword("");
       setExpiresAt("");
+      setUploadProgress({});
       setIsUploadModalOpen(false);
       document.getElementById("fileInput").value = "";
-      setTimeout(() => setUploadMessage(""), 3000);
+      setTimeout(() => setUploadMessage(""), 5000);
     } catch (error) {
-      setUploadMessage("File upload failed");
+      setUploadMessage("Upload process failed");
       console.error(error);
     } finally {
       setLoading(false);
@@ -502,14 +547,15 @@ const Dashboard = () => {
   const handleDownload = async (fileId, fileName) => {
     setDownloadingFileId(fileId);
     try {
-      const res = await API.post(`/files/${fileId}/access`, {});
-      const downloadUrl = res.data.downloadUrl;
+      const res = await API.get(`/files/${fileId}/download`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(res.data);
       const link = document.createElement('a');
-      link.href = downloadUrl;
+      link.href = url;
       link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Failed to download file", error);
       alert("You do not have permission to download this file or it requires a password.");
@@ -557,6 +603,8 @@ const Dashboard = () => {
       setDeletingFileId(null);
     }
   };
+
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -614,7 +662,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Main Content */}
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Folders Sidebar */}
           <div className="lg:col-span-1">
@@ -974,18 +1022,56 @@ const Dashboard = () => {
       {isUploadModalOpen && (
         <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md border border-gray-300">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Upload File</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Upload Files</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select File
+                  Select Files
                 </label>
-                <input
-                  type="file"
-                  id="fileInput"
-                  onChange={handleFileChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                />
+                <div
+                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                    isDragOver
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-300 hover:border-gray-400"
+                  }`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                >
+                  <div className="space-y-2">
+                    <svg className="w-8 h-8 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <p className="text-sm text-gray-600">
+                      {isDragOver ? "Drop files here" : "Drag & drop files here, or click to select"}
+                    </p>
+                    <input
+                      type="file"
+                      id="fileInput"
+                      multiple
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => document.getElementById("fileInput").click()}
+                      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    >
+                      Browse files
+                    </button>
+                  </div>
+                </div>
+                {uploadFiles.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-sm font-medium text-gray-700">Selected files:</p>
+                    {uploadFiles.map((file, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                        <span className="text-sm text-gray-900 truncate">{file.name}</span>
+                        <span className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <div>
