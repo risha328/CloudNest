@@ -33,9 +33,10 @@ export const getFolders = async (req, res) => {
     const permissions = await Permission.find({
       userId: req.user._id,
       resourceType: 'folder'
-    }).populate('resourceId');
+    });
 
-    const permittedFolders = permissions.map(p => p.resourceId);
+    const folderIds = permissions.map(p => p.resourceId);
+    const permittedFolders = await Folder.find({ _id: { $in: folderIds } });
 
     // Combine and remove duplicates
     const allFolders = [...ownedFolders, ...permittedFolders];
@@ -54,7 +55,8 @@ export const getFolders = async (req, res) => {
 
     res.json(foldersWithCounts.sort((a, b) => b.createdAt - a.createdAt));
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error in getFolders:", error);
+    res.status(500).json({ message: error.message, stack: error.stack });
   }
 };
 

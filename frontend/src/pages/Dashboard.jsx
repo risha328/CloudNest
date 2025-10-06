@@ -869,7 +869,7 @@ const Dashboard = () => {
                                   </svg>
                                 </button>
 
-                                {(user._id === file.ownerId || (filePermissions[file._id] && filePermissions[file._id].some(p => p.userId._id === user._id && (p.role === 'downloader' || p.role === 'editor')))) && (
+                                {(user._id === file.ownerId || (filePermissions[file._id] && filePermissions[file._id].some(p => p.userId._id === user._id && (p.role === 'downloader' || p.role === 'uploader' || p.role === 'editor')))) && (
                                   <button
                                     onClick={() => handleDownload(file._id, file.originalName)}
                                     disabled={downloadingFileId === file._id}
@@ -1217,6 +1217,7 @@ const Dashboard = () => {
                 >
                   <option value="viewer">Viewer</option>
                   <option value="downloader">Downloader</option>
+                  <option value="uploader">Uploader</option>
                   <option value="editor">Editor</option>
                 </select>
               </div>

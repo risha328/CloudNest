@@ -132,7 +132,7 @@ const FileView = () => {
 
   const hasDownloadPermission = () => {
     if (!user || !file) return false;
-    return user._id === file.ownerId || filePermissions.some(p => p.userId._id === user._id && (p.role === 'downloader' || p.role === 'editor'));
+    return user._id === file.ownerId || filePermissions.some(p => p.userId._id === user._id && (p.role === 'downloader' || p.role === 'uploader' || p.role === 'editor'));
   };
 
   return (

@@ -39,7 +39,7 @@ export const uploadFile = async (req, res) => {
 
     // Check permission if uploading to a folder
     if (folderId) {
-      const hasPermission = await checkPermission(req.user._id, folderId, 'folder', 'editor');
+      const hasPermission = await checkPermission(req.user._id, folderId, 'folder', 'uploader');
       if (!hasPermission) return res.status(403).json({ message: "Upload denied" });
     }
 
@@ -132,6 +132,15 @@ export const accessFile = async (req, res) => {
     const hasPermission = await checkPermission(req.user._id, file._id, 'file', 'viewer');
     if (!hasPermission) return res.status(403).json({ message: "Access denied" });
 
+    // Check if user is folder owner (bypasses password)
+    let isFolderOwner = false;
+    if (file.folderId) {
+      const folder = await Folder.findById(file.folderId);
+      if (folder && folder.ownerId.equals(req.user._id)) {
+        isFolderOwner = true;
+      }
+    }
+
     // check expiry
     if (file.expiresAt && new Date() > file.expiresAt) {
       return res.status(410).json({ message: "File has expired" });
@@ -142,7 +151,7 @@ export const accessFile = async (req, res) => {
       return res.status(410).json({ message: "Download limit reached" });
     }
 
-    if (file.passwordHash) {
+    if (file.passwordHash && !isFolderOwner) {
       if (!password) return res.status(400).json({ message: "Password required" });
       const isMatch = await bcrypt.compare(password, file.passwordHash);
       if (!isMatch) {

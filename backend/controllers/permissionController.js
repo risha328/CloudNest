@@ -142,6 +142,12 @@ export const checkPermission = async (userId, resourceId, resourceType, required
 
   if (resource && resource.ownerId.equals(userId)) return true;
 
+  // For files, also check if user owns the containing folder
+  if (resourceType === 'file' && resource && resource.folderId) {
+    const folder = await Folder.findById(resource.folderId);
+    if (folder && folder.ownerId.equals(userId)) return true;
+  }
+
   const permission = await Permission.findOne({
     userId,
     resourceId,
@@ -150,7 +156,7 @@ export const checkPermission = async (userId, resourceId, resourceType, required
 
   if (!permission) return false;
 
-  const roles = ['viewer', 'downloader', 'editor'];
+  const roles = ['viewer', 'downloader', 'uploader', 'editor'];
   const userRoleIndex = roles.indexOf(permission.role);
   const requiredRoleIndex = roles.indexOf(requiredRole);
 
