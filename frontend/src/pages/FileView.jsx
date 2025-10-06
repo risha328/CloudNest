@@ -14,10 +14,15 @@ const FileView = () => {
   const [fileName, setFileName] = useState("");
   const [file, setFile] = useState(null);
   const [filePermissions, setFilePermissions] = useState([]);
+  const [versions, setVersions] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [updatePassword, setUpdatePassword] = useState("");
+  const [updateExpiresAt, setUpdateExpiresAt] = useState("");
 
   useEffect(() => {
     fetchFile();
     fetchFilePermissions();
+    fetchVersions();
   }, [fileId]);
 
   const fetchFile = async () => {
@@ -35,6 +40,51 @@ const FileView = () => {
       setFilePermissions(res.data);
     } catch (error) {
       console.error("Failed to fetch file permissions", error);
+    }
+  };
+
+  const fetchVersions = async () => {
+    try {
+      const res = await API.get(`/files/${fileId}/versions`);
+      setVersions(res.data);
+    } catch (error) {
+      console.error("Failed to fetch versions", error);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!selectedFile) {
+      setMessage("Please select a file to upload");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    if (updatePassword) formData.append("password", updatePassword);
+    if (updateExpiresAt) formData.append("expiresAt", updateExpiresAt);
+
+    try {
+      const res = await API.put(`/files/${fileId}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setMessage("File updated successfully");
+      fetchVersions();
+      setSelectedFile(null);
+      setUpdatePassword("");
+      setUpdateExpiresAt("");
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Update failed");
+    }
+  };
+
+  const handleRestore = async (version) => {
+    try {
+      const res = await API.post(`/files/${fileId}/restore/${version}`);
+      setMessage("Version restored successfully");
+      fetchVersions();
+      // Refresh file data if needed
+      fetchFile();
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Restore failed");
     }
   };
 
@@ -125,6 +175,65 @@ const FileView = () => {
       {fileBlobUrl && (
         <div className="mt-4">
           <iframe src={fileBlobUrl} width="100%" height="600px" title="File Viewer" />
+        </div>
+      )}
+
+      {/* File Versioning Section */}
+      {user && file && user._id === file.ownerId && (
+        <div className="mt-8">
+          <h2 className="text-xl font-bold mb-4">File Versioning</h2>
+
+          {/* Update File */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-2">Update File</h3>
+            <input
+              type="file"
+              onChange={(e) => setSelectedFile(e.target.files[0])}
+              className="border p-2 w-full mb-2"
+            />
+            <input
+              type="password"
+              placeholder="New password (optional)"
+              value={updatePassword}
+              onChange={(e) => setUpdatePassword(e.target.value)}
+              className="border p-2 w-full mb-2"
+            />
+            <input
+              type="datetime-local"
+              placeholder="Expiry date (optional)"
+              value={updateExpiresAt}
+              onChange={(e) => setUpdateExpiresAt(e.target.value)}
+              className="border p-2 w-full mb-2"
+            />
+            <button
+              onClick={handleUpdate}
+              className="bg-purple-600 text-white px-4 py-2 rounded w-full"
+            >
+              Update File
+            </button>
+          </div>
+
+          {/* Versions List */}
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Versions</h3>
+            <ul className="space-y-2">
+              {versions.map((version) => (
+                <li key={version.version} className="border p-4 rounded flex justify-between items-center">
+                  <div>
+                    <p><strong>Version:</strong> {version.version}</p>
+                    <p><strong>Size:</strong> {(version.size / 1024).toFixed(2)} KB</p>
+                    <p><strong>Created:</strong> {new Date(version.createdAt).toLocaleString()}</p>
+                  </div>
+                  <button
+                    onClick={() => handleRestore(version.version)}
+                    className="bg-orange-600 text-white px-4 py-2 rounded"
+                  >
+                    Restore
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
     </div>

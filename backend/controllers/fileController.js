@@ -83,13 +83,28 @@ export const uploadFile = async (req, res) => {
   }
 };
 
+// Get file by ID (owner only)
+export const getFileById = async (req, res) => {
+  try {
+    const file = await File.findById(req.params.id);
+    if (!file)
+        return res.status(404).json({ message: "File not found" });
+    if (!file.ownerId.equals(req.user._id))
+        return res.status(403).json({ message: "Forbidden" });
+
+    res.json(file);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Get metadata (owner only)
 export const getFileMetadata = async (req, res) => {
   try {
     const file = await File.findById(req.params.id);
-    if (!file) 
+    if (!file)
         return res.status(404).json({ message: "File not found" });
-    if (!file.ownerId.equals(req.user._id)) 
+    if (!file.ownerId.equals(req.user._id))
         return res.status(403).json({ message: "Forbidden" });
 
     res.json({
@@ -351,6 +366,127 @@ export const getFileStats = async (req, res) => {
       expiresAt: file.expiresAt,
       createdAt: file.createdAt
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Update file (create new version)
+export const updateFile = async (req, res) => {
+  try {
+    const fileId = req.params.id;
+    const { password, expiresAt } = req.body;
+    if (!req.file) return res.status(400).json({ message: "File is required" });
+
+    const file = await File.findById(fileId);
+    if (!file) return res.status(404).json({ message: "File not found" });
+    if (!file.ownerId.equals(req.user._id)) return res.status(403).json({ message: "Forbidden" });
+
+    // Move current to versions
+    file.versions.push({
+      version: file.currentVersion,
+      storageName: file.storageName,
+      path: file.path,
+      size: file.size,
+      mimeType: file.mimeType,
+      createdAt: file.updatedAt || file.createdAt
+    });
+
+    // Update to new version
+    file.currentVersion += 1;
+    file.storageName = req.file.filename;
+    file.path = req.file.path;
+    file.size = req.file.size;
+    file.mimeType = req.file.mimetype;
+
+    // Update password if provided
+    if (password !== undefined) {
+      if (password) {
+        const salt = await bcrypt.genSalt(10);
+        file.passwordHash = await bcrypt.hash(password, salt);
+      } else {
+        file.passwordHash = null;
+      }
+    }
+
+    if (expiresAt !== undefined) {
+      file.expiresAt = expiresAt ? new Date(expiresAt) : null;
+    }
+
+    await file.save();
+
+    res.status(200).json({
+      message: "File updated successfully",
+      fileId: file._id,
+      version: file.currentVersion
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Update failed", error: error.message });
+  }
+};
+
+// Get file versions
+export const getVersions = async (req, res) => {
+  try {
+    const file = await File.findById(req.params.id);
+    if (!file) return res.status(404).json({ message: "File not found" });
+    if (!file.ownerId.equals(req.user._id)) return res.status(403).json({ message: "Forbidden" });
+
+    const versions = [
+      ...file.versions,
+      {
+        version: file.currentVersion,
+        storageName: file.storageName,
+        path: file.path,
+        size: file.size,
+        mimeType: file.mimeType,
+        createdAt: file.updatedAt || file.createdAt
+      }
+    ].sort((a, b) => b.version - a.version);
+
+    res.json(versions);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Restore to a specific version
+export const restoreVersion = async (req, res) => {
+  try {
+    const { version } = req.params;
+    const file = await File.findById(req.params.id);
+    if (!file) return res.status(404).json({ message: "File not found" });
+    if (!file.ownerId.equals(req.user._id)) return res.status(403).json({ message: "Forbidden" });
+
+    const targetVersion = parseInt(version);
+    if (targetVersion === file.currentVersion) return res.status(400).json({ message: "Already at this version" });
+
+    let versionData;
+    if (targetVersion < file.currentVersion) {
+      versionData = file.versions.find(v => v.version === targetVersion);
+      if (!versionData) return res.status(404).json({ message: "Version not found" });
+    } else {
+      return res.status(400).json({ message: "Invalid version" });
+    }
+
+    // Copy the version file to current path
+    const currentPath = path.resolve(file.path);
+    const versionPath = path.resolve(versionData.path);
+    fs.copyFileSync(versionPath, currentPath);
+
+    // Update file metadata to match the version
+    file.storageName = versionData.storageName;
+    file.size = versionData.size;
+    file.mimeType = versionData.mimeType;
+    file.currentVersion = targetVersion;
+
+    // Remove versions newer than this (optional, or keep history)
+    file.versions = file.versions.filter(v => v.version < targetVersion);
+
+    await file.save();
+
+    res.json({ message: "Version restored successfully", currentVersion: file.currentVersion });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -16,7 +16,16 @@ const fileSchema = new mongoose.Schema({
   maxDownloads: { type: Number },
   expiresAt: { type: Date },
   blocked: { type: Boolean, default: false },
-   failedAttempts: { type: Number, default: 0 }
+  failedAttempts: { type: Number, default: 0 },
+  versions: [{
+    version: { type: Number, required: true },
+    storageName: { type: String, required: true },
+    path: { type: String, required: true },
+    size: { type: Number },
+    mimeType: { type: String },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  currentVersion: { type: Number, default: 1 }
 }, { timestamps: true });
 
 export default mongoose.model("File", fileSchema);
