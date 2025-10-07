@@ -1,16 +1,17 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { LayoutDashboard, FileText, FolderOpen, Users, BarChart3, HardDrive } from 'lucide-react';
 
 const AdminSidebar = ({ isCollapsed, setIsCollapsed }) => {
   const location = useLocation();
 
   const menuItems = [
-    { name: "Dashboard", icon: "📊", path: "/admin/dashboard" },
-    { name: "File Management", icon: "📂", path: "/admin/files" },
-    { name: "Folder Management", icon: "🗃️", path: "/admin/folders" },
-    { name: "Users Management", icon: "👤", path: "/admin/users" },
-    { name: "Analytics", icon: "📈", path: "/admin/analytics" },
-    { name: "Storage Management", icon: "💾", path: "/admin/storage" },
+    { name: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
+    { name: "File Management", icon: FileText, path: "/admin/files" },
+    { name: "Folder Management", icon: FolderOpen, path: "/admin/folders" },
+    { name: "Users Management", icon: Users, path: "/admin/users" },
+    { name: "Analytics", icon: BarChart3, path: "/admin/analytics" },
+    { name: "Storage Management", icon: HardDrive, path: "/admin/storage" },
   ];
 
   return (
@@ -39,7 +40,9 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed }) => {
               }`}
               title={isCollapsed ? item.name : ''}
             >
-              <span className={`${isCollapsed ? 'mr-0' : 'mr-3'}`}>{item.icon}</span>
+              <span className={`${isCollapsed ? 'mr-0' : 'mr-3'}`}>
+                <item.icon size={20} className="text-current" />
+              </span>
               {!isCollapsed && item.name}
             </Link>
           ))}
