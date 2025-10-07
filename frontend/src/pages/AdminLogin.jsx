@@ -65,7 +65,7 @@ const AdminLogin = () => {
         {/* Header */}
         <div className="text-center">
           <Link to="/" className="inline-flex items-center space-x-3 mb-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-red-600 to-red-800 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center shadow-lg">
               <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
@@ -105,7 +105,7 @@ const AdminLogin = () => {
                   name="email"
                   type="email"
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors placeholder-gray-400"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder-gray-400"
                   placeholder="Enter your admin email address"
                   value={formData.email}
                   onChange={handleChange}
@@ -127,7 +127,7 @@ const AdminLogin = () => {
                 <button
                   type="button"
                   onClick={handleForgotPassword}
-                  className="text-sm text-red-600 hover:text-red-500 font-medium"
+                  className="text-sm text-blue-600 hover:text-blue-500 font-medium"
                 >
                   Forgot password?
                 </button>
@@ -138,7 +138,7 @@ const AdminLogin = () => {
                   name="password"
                   type={showPassword ? "text" : "password"}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors placeholder-gray-400 pr-10"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder-gray-400 pr-10"
                   placeholder="Enter your admin password"
                   value={formData.password}
                   onChange={handleChange}
@@ -167,7 +167,7 @@ const AdminLogin = () => {
                 type="checkbox"
                 checked={formData.rememberMe}
                 onChange={handleChange}
-                className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
               <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-700">
                 Remember me
@@ -178,7 +178,7 @@ const AdminLogin = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
             >
               {loading ? (
                 <div className="flex items-center justify-center space-x-2">
@@ -191,14 +191,14 @@ const AdminLogin = () => {
             </button>
 
             {/* Back to User Login */}
-            <div className="text-center pt-4 border-t border-gray-200">
+            {/* <div className="text-center pt-4 border-t border-gray-200">
               <p className="text-sm text-gray-600">
                 Not an admin?{' '}
                 <Link to="/login" className="font-semibold text-blue-600 hover:text-blue-500 transition-colors">
                   User Login
                 </Link>
               </p>
-            </div>
+            </div> */}
           </form>
         </div>
 
