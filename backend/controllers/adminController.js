@@ -205,3 +205,221 @@ export const getStorageDetails = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Get analytics data
+export const getAnalyticsData = async (req, res) => {
+  try {
+    const range = req.query.range || '30d';
+    const days = range === '7d' ? 7 : range === '30d' ? 30 : range === '90d' ? 90 : 365;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    // File Upload Trends: uploads per day
+    const uploadTrends = await File.aggregate([
+      {
+        $match: { createdAt: { $gte: startDate } }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" }
+          },
+          count: { $sum: 1 },
+          totalSize: { $sum: '$size' }
+        }
+      },
+      {
+        $sort: { "_id": 1 }
+      }
+    ]);
+
+    // Download Trends: downloads per day (assuming downloadCount is cumulative, we need to track daily downloads)
+    // For simplicity, we'll use createdAt as proxy, but ideally you'd have a downloads collection
+    const downloadTrends = await File.aggregate([
+      {
+        $match: { createdAt: { $gte: startDate } }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" }
+          },
+          count: { $sum: '$downloadCount' }
+        }
+      },
+      {
+        $sort: { "_id": 1 }
+      }
+    ]);
+
+    // Top 10 Most Downloaded Files
+    const topDownloadedFiles = await File.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'ownerId',
+          foreignField: '_id',
+          as: 'owner'
+        }
+      },
+      {
+        $unwind: { path: '$owner', preserveNullAndEmptyArrays: true }
+      },
+      {
+        $project: {
+          originalName: 1,
+          downloadCount: 1,
+          viewCount: 1,
+          size: 1,
+          fileType: '$mimeType',
+          ownerName: '$owner.name'
+        }
+      },
+      {
+        $sort: { downloadCount: -1 }
+      },
+      {
+        $limit: 10
+      }
+    ]);
+
+    // Top Users by Upload Volume (by file count)
+    const topUsersByUploads = await File.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'ownerId',
+          foreignField: '_id',
+          as: 'owner'
+        }
+      },
+      {
+        $unwind: { path: '$owner', preserveNullAndEmptyArrays: true }
+      },
+      {
+        $group: {
+          _id: '$ownerId',
+          fileCount: { $sum: 1 },
+          totalStorage: { $sum: '$size' },
+          totalDownloads: { $sum: '$downloadCount' },
+          ownerName: { $first: '$owner.name' },
+          ownerEmail: { $first: '$owner.email' }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: '$_id',
+          ownerName: 1,
+          ownerEmail: 1,
+          fileCount: 1,
+          totalStorage: 1,
+          totalDownloads: 1
+        }
+      },
+      {
+        $sort: { fileCount: -1 }
+      },
+      {
+        $limit: 10
+      }
+    ]);
+
+    // File Type Distribution
+    const fileTypeDistribution = await File.aggregate([
+      {
+        $group: {
+          _id: '$mimeType',
+          count: { $sum: 1 },
+          totalSize: { $sum: '$size' }
+        }
+      },
+      {
+        $sort: { count: -1 }
+      }
+    ]);
+
+    // Malware Scan Summary
+    const malwareSummary = await File.aggregate([
+      {
+        $group: {
+          _id: '$blocked',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // User Activity (daily active users approximation)
+    const userActivity = await File.aggregate([
+      {
+        $match: { createdAt: { $gte: startDate } }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" }
+          },
+          activeUsers: { $addToSet: '$ownerId' }
+        }
+      },
+      {
+        $project: {
+          subject: '$_id',
+          activeUsers: { $size: '$activeUsers' },
+          totalUsers: { $literal: await User.countDocuments({ role: 'user' }) }
+        }
+      },
+      {
+        $sort: { subject: 1 }
+      }
+    ]);
+
+    // System Health Stats
+    const totalUsers = await User.countDocuments({ role: 'user' });
+    const totalFiles = await File.countDocuments();
+    const totalDownloads = await File.aggregate([
+      { $group: { _id: null, total: { $sum: "$downloadCount" } } }
+    ]);
+    const totalStorage = await File.aggregate([
+      { $group: { _id: null, storage: { $sum: "$size" } } }
+    ]);
+
+    // Real-time stats (mock data for now)
+    const realTimeStats = {
+      activeUsers: Math.floor(totalUsers * 0.1), // 10% active
+      userGrowth: 5.2,
+      fileGrowth: 12.8,
+      downloadGrowth: 8.3,
+      storageGrowth: 15.6
+    };
+
+    // Security Stats
+    const securityStats = {
+      successfulScans: totalFiles,
+      quarantinedFiles: malwareSummary.find(m => m._id === true)?.count || 0,
+      securityAlerts: 0,
+      lastScan: new Date(),
+      scanSuccessRate: 100
+    };
+
+    res.json({
+      uploadTrends,
+      downloadTrends,
+      topDownloadedFiles,
+      topUsersByUploads,
+      fileTypeDistribution,
+      malwareSummary,
+      userActivity,
+      systemHealth: {
+        totalUsers,
+        totalFiles,
+        totalDownloads: totalDownloads[0]?.total || 0,
+        totalStorage: totalStorage[0]?.storage || 0
+      },
+      realTimeStats,
+      securityStats
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

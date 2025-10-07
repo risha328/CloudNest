@@ -1,7 +1,7 @@
 import express from "express";
 import { protect,isAdmin } from "../midddleware/authMiddleware.js";
 //import { isAdmin } from "../midddleware/uploadMiddleware.js";
-import { getAllFiles, adminDeleteFile, getPlatformStats, getAllUsers, getAllFolders, getStorageDetails } from "../controllers/adminController.js";
+import { getAllFiles, adminDeleteFile, getPlatformStats, getAllUsers, getAllFolders, getStorageDetails, getAnalyticsData } from "../controllers/adminController.js";
 
 const router = express.Router();
 
@@ -11,5 +11,6 @@ router.get("/folders", protect, isAdmin, getAllFolders);
 router.get("/users", protect, isAdmin, getAllUsers);
 router.get("/stats", protect, isAdmin, getPlatformStats);
 router.get("/storage", protect, isAdmin, getStorageDetails);
+router.get("/analytics", protect, isAdmin, getAnalyticsData);
 
 export default router;
