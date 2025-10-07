@@ -1,6 +1,7 @@
 import Folder from "../models/Folder.js";
 import File from "../models/File.js";
 import Permission from "../models/Permission.js";
+import Favorite from "../models/Favorite.js";
 import { checkPermission } from "./permissionController.js";
 import fs from "fs";
 import path from "path";
@@ -44,12 +45,18 @@ export const getFolders = async (req, res) => {
       index === self.findIndex(f => f._id.equals(folder._id))
     );
 
+    // Get favorites for the user
+    const userFavorites = await Favorite.find({ userId: req.user._id }).select('folderId');
+    const favoriteFolderIds = new Set(userFavorites.map(f => f.folderId.toString()));
+
     // Get file counts for each folder
     const foldersWithCounts = await Promise.all(uniqueFolders.map(async (folder) => {
       const fileCount = await File.countDocuments({ folderId: folder._id });
+      const isFavorite = favoriteFolderIds.has(folder._id.toString());
       return {
         ...folder.toObject(),
-        fileCount
+        fileCount,
+        isFavorite
       };
     }));
 
@@ -87,6 +94,61 @@ export const deleteFolder = async (req, res) => {
     await folder.remove();
 
     res.json({ message: "Folder and all its contents deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Toggle favorite status for a folder
+export const toggleFavorite = async (req, res) => {
+  try {
+    const folderId = req.params.id;
+    const userId = req.user._id;
+
+    // Check if folder exists and user has access
+    const folder = await Folder.findById(folderId);
+    if (!folder) return res.status(404).json({ message: "Folder not found" });
+
+    // Check if user owns the folder or has permission
+    const hasAccess = folder.ownerId.equals(userId) ||
+      await Permission.findOne({ userId, resourceId: folderId, resourceType: 'folder' });
+    if (!hasAccess) return res.status(403).json({ message: "Forbidden" });
+
+    // Check if already favorited
+    const existingFavorite = await Favorite.findOne({ userId, folderId });
+
+    if (existingFavorite) {
+      // Remove favorite
+      await Favorite.deleteOne({ _id: existingFavorite._id });
+      res.json({ message: "Folder unfavorited", isFavorite: false });
+    } else {
+      // Add favorite
+      const favorite = new Favorite({ userId, folderId });
+      await favorite.save();
+      res.json({ message: "Folder favorited", isFavorite: true });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get user's favorite folders
+export const getFavorites = async (req, res) => {
+  try {
+    const favorites = await Favorite.find({ userId: req.user._id }).populate('folderId');
+    const favoriteFolders = favorites.map(fav => fav.folderId).filter(folder => folder); // Filter out null if folder deleted
+
+    // Add file counts
+    const foldersWithCounts = await Promise.all(favoriteFolders.map(async (folder) => {
+      const fileCount = await File.countDocuments({ folderId: folder._id });
+      return {
+        ...folder.toObject(),
+        fileCount,
+        isFavorite: true
+      };
+    }));
+
+    res.json(foldersWithCounts);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -38,6 +38,15 @@ export const createFolder = (name) =>
 export const getFolders = () =>
   API.get('/folders');
 
+export const deleteFolder = (folderId) =>
+  API.delete(`/folders/${folderId}`);
+
+export const toggleFavorite = (folderId) =>
+  API.post(`/folders/${folderId}/favorite`);
+
+export const getFavorites = () =>
+  API.get('/folders/favorites');
+
 export const getFilesByFolder = (folderId) =>
   API.get(`/files?folderId=${folderId}`);
 

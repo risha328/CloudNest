@@ -231,7 +231,7 @@
 
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../utils/api";
+import API, { toggleFavorite as toggleFavAPI, getFavorites as getFavAPI } from "../utils/api";
 import { AuthContext } from "../context/AuthContext";
 
 const Dashboard = () => {
@@ -289,6 +289,8 @@ const Dashboard = () => {
     total: 5368709120,
     filesCount: 0
   });
+  const [favorites, setFavorites] = useState([]);
+  const [showFavorites, setShowFavorites] = useState(false);
 
   // Fetch permissions for a specific file
   const fetchFilePermissions = async (fileId) => {
@@ -319,6 +321,7 @@ const Dashboard = () => {
     if (user) {
       fetchFolders();
       fetchStorageStats();
+      fetchFavorites();
     }
   }, [user]);
 
@@ -338,6 +341,24 @@ const Dashboard = () => {
       setStorageStats(res.data);
     } catch (error) {
       console.error("Failed to fetch storage stats", error);
+    }
+  };
+
+  const fetchFavorites = async () => {
+    try {
+      const res = await getFavAPI();
+      setFavorites(res.data);
+    } catch (error) {
+      console.error("Failed to fetch favorites", error);
+    }
+  };
+
+  const toggleFavorite = async (folderId) => {
+    try {
+      await toggleFavAPI(folderId);
+      fetchFavorites(); // Refresh favorites after toggling
+    } catch (error) {
+      console.error("Failed to toggle favorite", error);
     }
   };
 
@@ -662,6 +683,62 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Favorites Section */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-semibold text-gray-900">Favorites</h2>
+            <button
+              onClick={() => setShowFavorites(!showFavorites)}
+              className="text-blue-600 hover:text-blue-700"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showFavorites ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"} />
+              </svg>
+            </button>
+          </div>
+
+          {showFavorites && (
+            <div className="space-y-2">
+              {favorites.length > 0 ? (
+                favorites.map((fav) => (
+                  <button
+                    key={fav._id}
+                    onClick={() => setSelectedFolder(fav)}
+                    className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left transition-colors ${
+                      selectedFolder && selectedFolder._id === fav._id
+                        ? "bg-yellow-50 border border-yellow-200"
+                        : "hover:bg-gray-50"
+                    }`}
+                  >
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      selectedFolder && selectedFolder._id === fav._id
+                        ? "bg-yellow-600 text-white"
+                        : "bg-yellow-100 text-yellow-600"
+                    }`}>
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{fav.name}</p>
+                      <p className="text-xs text-gray-500">{fav.fileCount || 0} files</p>
+                    </div>
+                  </button>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-500 text-sm">No favorites yet</p>
+                  <p className="text-gray-400 text-xs">Star folders to add them here</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Folders Sidebar */}
@@ -704,6 +781,31 @@ const Dashboard = () => {
                       <p className="text-xs text-gray-500">{folder.fileCount || 0} files</p>
                     </div>
                     <div className="flex space-x-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(folder._id);
+                        }}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                          favorites.some(fav => fav._id === folder._id)
+                            ? "bg-yellow-100 hover:bg-yellow-200"
+                            : "bg-gray-100 hover:bg-gray-200"
+                        }`}
+                        title={favorites.some(fav => fav._id === folder._id) ? "Remove from Favorites" : "Add to Favorites"}
+                      >
+                        <svg
+                          className={`w-4 h-4 ${
+                            favorites.some(fav => fav._id === folder._id)
+                              ? "text-yellow-600"
+                              : "text-gray-600"
+                          }`}
+                          fill={favorites.some(fav => fav._id === folder._id) ? "currentColor" : "none"}
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                        </svg>
+                      </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
