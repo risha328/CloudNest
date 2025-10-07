@@ -19,6 +19,9 @@ import PricingPage from "./pages/PricingPage";
 import AdminLogin from "./pages/AdminLogin";
 import AdminSignup from "./pages/AdminSignup";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminUsers from "./pages/AdminUsers";
+import AdminFiles from "./pages/AdminFiles";
+import AdminFolders from "./pages/AdminFolders";
 
 function AppContent() {
   const location = useLocation();
@@ -47,6 +50,9 @@ function AppContent() {
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/signup" element={<AdminSignup />} />
           <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+          <Route path="/admin/files" element={<AdminProtectedRoute><AdminFiles /></AdminProtectedRoute>} />
+          <Route path="/admin/folders" element={<AdminProtectedRoute><AdminFolders /></AdminProtectedRoute>} />
+          <Route path="/admin/users" element={<AdminProtectedRoute><AdminUsers /></AdminProtectedRoute>} />
 
         </Routes>
         {!isAdminRoute && <Footer />}

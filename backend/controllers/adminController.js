@@ -1,12 +1,56 @@
 import File from "../models/File.js";
 import User from "../models/User.js";
+import Folder from "../models/Folder.js";
 import fs from "fs";
 import path from "path";
 
 // Get all files
 export const getAllFiles = async (req, res) => {
   try {
-    const files = await File.find().populate("ownerId", "name email");
+    const files = await File.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'ownerId',
+          foreignField: '_id',
+          as: 'owner'
+        }
+      },
+      {
+        $unwind: { path: '$owner', preserveNullAndEmptyArrays: true }
+      },
+      {
+        $lookup: {
+          from: 'permissions',
+          let: { fileId: '$_id' },
+          pipeline: [
+            { $match: { $expr: { $and: [{ $eq: ['$resourceId', '$$fileId'] }, { $eq: ['$resourceType', 'file'] }] } } }
+          ],
+          as: 'permissions'
+        }
+      },
+      {
+        $addFields: {
+          accessCount: { $size: '$permissions' },
+          ownerName: '$owner.name',
+          ownerEmail: '$owner.email'
+        }
+      },
+      {
+        $project: {
+          originalName: 1,
+          expiresAt: 1,
+          createdAt: 1,
+          viewCount: 1,
+          downloadCount: 1,
+          accessCount: 1,
+          ownerName: 1,
+          ownerEmail: 1,
+          size: 1,
+          mimeType: 1
+        }
+      }
+    ]);
     res.json(files);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -28,10 +72,68 @@ export const adminDeleteFile = async (req, res) => {
   }
 };
 
+// Get all folders
+export const getAllFolders = async (req, res) => {
+  try {
+    const folders = await Folder.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'ownerId',
+          foreignField: '_id',
+          as: 'owner'
+        }
+      },
+      {
+        $unwind: { path: '$owner', preserveNullAndEmptyArrays: true }
+      },
+      {
+        $lookup: {
+          from: 'permissions',
+          let: { folderId: '$_id' },
+          pipeline: [
+            { $match: { $expr: { $and: [{ $eq: ['$resourceId', '$$folderId'] }, { $eq: ['$resourceType', 'folder'] }] } } }
+          ],
+          as: 'permissions'
+        }
+      },
+      {
+        $addFields: {
+          accessCount: { $size: '$permissions' },
+          ownerName: '$owner.name',
+          ownerEmail: '$owner.email'
+        }
+      },
+      {
+        $project: {
+          name: 1,
+          createdAt: 1,
+          accessCount: 1,
+          ownerName: 1,
+          ownerEmail: 1
+        }
+      }
+    ]);
+    res.json(folders);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get all users
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({ role: 'user' }).select('name email role createdAt');
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Platform stats
 export const getPlatformStats = async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments();
+    const totalUsers = await User.countDocuments({ role: 'user' });
     const totalFiles = await File.countDocuments();
     const totalDownloads = await File.aggregate([
       { $group: { _id: null, total: { $sum: "$downloadCount" } } }
