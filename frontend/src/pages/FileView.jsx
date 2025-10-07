@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
-import API from "../utils/api";
+import API, { getComments, addComment, deleteComment } from "../utils/api";
 import { AuthContext } from "../context/AuthContext";
 
 const FileView = () => {
@@ -18,6 +18,8 @@ const FileView = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [updatePassword, setUpdatePassword] = useState("");
   const [updateExpiresAt, setUpdateExpiresAt] = useState("");
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
 
   useEffect(() => {
     fetchFile();
@@ -88,12 +90,23 @@ const FileView = () => {
     }
   };
 
+  const fetchComments = async () => {
+    try {
+      const res = await getComments(fileId);
+      setComments(res.data);
+    } catch (error) {
+      console.error("Failed to fetch comments", error);
+      // Don't show error if no permission, just don't display comments
+    }
+  };
+
   const handleAccess = async () => {
     try {
       const res = await API.post(`/files/${fileId}/access`, { password });
       setViewUrl(res.data.viewUrl.replace('/api', ''));
       setDownloadUrl(res.data.downloadUrl ? res.data.downloadUrl.replace('/api', '') : null);
       setMessage("Access granted. Click view to see the file.");
+      fetchComments(); // Fetch comments after access
     } catch (error) {
       setMessage(error.response?.data?.message || "Access failed");
     }
@@ -135,6 +148,28 @@ const FileView = () => {
     return user._id === file.ownerId || filePermissions.some(p => p.userId._id === user._id && (p.role === 'downloader' || p.role === 'uploader' || p.role === 'editor'));
   };
 
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+    try {
+      await addComment(fileId, newComment);
+      setNewComment("");
+      fetchComments();
+    } catch (error) {
+      console.error("Failed to add comment", error);
+      setMessage("Failed to add comment");
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await deleteComment(commentId);
+      fetchComments();
+    } catch (error) {
+      console.error("Failed to delete comment", error);
+      setMessage("Failed to delete comment");
+    }
+  };
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Access File</h1>
@@ -174,68 +209,58 @@ const FileView = () => {
       )}
       {fileBlobUrl && (
         <div className="mt-4">
-          <iframe src={fileBlobUrl} width="100%" height="600px" title="File Viewer" />
+          {file && file.mimeType && file.mimeType.startsWith('image/') ? (
+            <img src={fileBlobUrl} alt="File" className="max-w-full h-auto border" />
+          ) : (
+            <iframe src={fileBlobUrl} className="w-full h-96 border" title="File Viewer" />
+          )}
         </div>
       )}
 
-      {/* File Versioning Section */}
-      {user && file && user._id === file.ownerId && (
-        <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4">File Versioning</h2>
-
-          {/* Update File */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-2">Update File</h3>
-            <input
-              type="file"
-              onChange={(e) => setSelectedFile(e.target.files[0])}
-              className="border p-2 w-full mb-2"
-            />
-            <input
-              type="password"
-              placeholder="New password (optional)"
-              value={updatePassword}
-              onChange={(e) => setUpdatePassword(e.target.value)}
-              className="border p-2 w-full mb-2"
-            />
-            <input
-              type="datetime-local"
-              placeholder="Expiry date (optional)"
-              value={updateExpiresAt}
-              onChange={(e) => setUpdateExpiresAt(e.target.value)}
-              className="border p-2 w-full mb-2"
-            />
-            <button
-              onClick={handleUpdate}
-              className="bg-purple-600 text-white px-4 py-2 rounded w-full"
-            >
-              Update File
-            </button>
-          </div>
-
-          {/* Versions List */}
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Versions</h3>
-            <ul className="space-y-2">
-              {versions.map((version) => (
-                <li key={version.version} className="border p-4 rounded flex justify-between items-center">
+      {/* Comments Section */}
+      <div className="mt-6">
+        <h2 className="text-xl font-bold mb-4">Comments</h2>
+        {comments.length > 0 ? (
+          <div className="space-y-4">
+            {comments.map((comment) => (
+              <div key={comment._id} className="border p-4 rounded">
+                <div className="flex justify-between items-start">
                   <div>
-                    <p><strong>Version:</strong> {version.version}</p>
-                    <p><strong>Size:</strong> {(version.size / 1024).toFixed(2)} KB</p>
-                    <p><strong>Created:</strong> {new Date(version.createdAt).toLocaleString()}</p>
+                    <p className="font-semibold">{comment.userId.name}</p>
+                    <p className="text-sm text-gray-600">{new Date(comment.createdAt).toLocaleString()}</p>
+                    <p className="mt-2">{comment.content}</p>
                   </div>
-                  <button
-                    onClick={() => handleRestore(version.version)}
-                    className="bg-orange-600 text-white px-4 py-2 rounded"
-                  >
-                    Restore
-                  </button>
-                </li>
-              ))}
-            </ul>
+                  {user && user._id === comment.userId._id && (
+                    <button
+                      onClick={() => handleDeleteComment(comment._id)}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
+        ) : (
+          <p>No comments yet.</p>
+        )}
+        <div className="mt-4">
+          <textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Add a comment..."
+            className="border p-2 w-full"
+            rows="3"
+          />
+          <button
+            onClick={handleAddComment}
+            className="bg-blue-600 text-white px-4 py-2 rounded mt-2"
+          >
+            Add Comment
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 };

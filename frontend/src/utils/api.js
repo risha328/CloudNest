@@ -80,4 +80,14 @@ export const getStorageStats = () =>
 export const getFolderAnalytics = (folderId) =>
   API.get(`/files/folder-analytics/${folderId}`);
 
+// Comment API functions
+export const getComments = (fileId) =>
+  API.get(`/comments/${fileId}`);
+
+export const addComment = (fileId, content) =>
+  API.post('/comments', { fileId, content });
+
+export const deleteComment = (commentId) =>
+  API.delete(`/comments/${commentId}`);
+
 export default API;
