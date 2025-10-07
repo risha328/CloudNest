@@ -1,6 +1,7 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -15,13 +16,18 @@ import HowItWorks from "./pages/HowItWorkspage";
 import SecurityPage from "./pages/SecurityPage";
 import Footer from "./components/Footer";
 import PricingPage from "./pages/PricingPage";
-//import AdminDashboard from "./pages/AdminDashboard";
+import AdminLogin from "./pages/AdminLogin";
+import AdminSignup from "./pages/AdminSignup";
+import AdminDashboard from "./pages/AdminDashboard";
 
-function App() {
+function AppContent() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
   return (
-    <Router>
-      <Navbar />
-      <div className="p-4">
+    <>
+      {!isAdminRoute && <Navbar />}
+      <div className={isAdminRoute ? '' : 'p-4'}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
@@ -29,7 +35,7 @@ function App() {
           <Route path="/features" element={<ProtectedRoute><Features /></ProtectedRoute>} />
           <Route path="/how-it-works" element={<ProtectedRoute><HowItWorks/></ProtectedRoute>} />
           <Route path="/security" element={<ProtectedRoute><SecurityPage /></ProtectedRoute>} />
-          <Route path="/pricing" element={<ProtectedRoute><PricingPage /></ProtectedRoute>} />  
+          <Route path="/pricing" element={<ProtectedRoute><PricingPage /></ProtectedRoute>} />
           <Route path="/blog" element={<ProtectedRoute><Blog /></ProtectedRoute>} />
           <Route path="/contact" element={<ProtectedRoute><Contact /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -37,9 +43,22 @@ function App() {
           <Route path="/file/:id" element={<ProtectedRoute><FileView /></ProtectedRoute>} />
           <Route path="/analytics/:type/:id" element={<ProtectedRoute><FileAnalytics /></ProtectedRoute>} />
 
+          {/* Admin Routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/signup" element={<AdminSignup />} />
+          <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+
         </Routes>
-        <Footer/>
+        {!isAdminRoute && <Footer />}
       </div>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }
