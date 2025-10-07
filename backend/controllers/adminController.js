@@ -153,3 +153,55 @@ export const getPlatformStats = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Get storage details (per user and total)
+export const getStorageDetails = async (req, res) => {
+  try {
+    const storagePerUser = await File.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'ownerId',
+          foreignField: '_id',
+          as: 'owner'
+        }
+      },
+      {
+        $unwind: { path: '$owner', preserveNullAndEmptyArrays: true }
+      },
+      {
+        $group: {
+          _id: '$ownerId',
+          totalStorage: { $sum: '$size' },
+          fileCount: { $sum: 1 },
+          ownerName: { $first: '$owner.name' },
+          ownerEmail: { $first: '$owner.email' }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: '$_id',
+          ownerName: 1,
+          ownerEmail: 1,
+          totalStorage: 1,
+          fileCount: 1
+        }
+      },
+      {
+        $sort: { totalStorage: -1 }
+      }
+    ]);
+
+    const totalStorage = await File.aggregate([
+      { $group: { _id: null, storage: { $sum: "$size" } } }
+    ]);
+
+    res.json({
+      totalStorage: totalStorage[0]?.storage || 0,
+      storagePerUser
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

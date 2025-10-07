@@ -22,6 +22,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/AdminUsers";
 import AdminFiles from "./pages/AdminFiles";
 import AdminFolders from "./pages/AdminFolders";
+import AdminStorage from "./pages/AdminStorage";
 
 function AppContent() {
   const location = useLocation();
@@ -53,6 +54,7 @@ function AppContent() {
           <Route path="/admin/files" element={<AdminProtectedRoute><AdminFiles /></AdminProtectedRoute>} />
           <Route path="/admin/folders" element={<AdminProtectedRoute><AdminFolders /></AdminProtectedRoute>} />
           <Route path="/admin/users" element={<AdminProtectedRoute><AdminUsers /></AdminProtectedRoute>} />
+          <Route path="/admin/storage" element={<AdminProtectedRoute><AdminStorage /></AdminProtectedRoute>} />
 
         </Routes>
         {!isAdminRoute && <Footer />}
