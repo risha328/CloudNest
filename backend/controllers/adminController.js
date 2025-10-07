@@ -206,6 +206,172 @@ export const getStorageDetails = async (req, res) => {
   }
 };
 
+// Get dashboard analytics data
+export const getDashboardAnalytics = async (req, res) => {
+  try {
+    // File type distribution
+    const fileTypeStats = await File.aggregate([
+      {
+        $group: {
+          _id: '$mimeType',
+          count: { $sum: 1 },
+          totalSize: { $sum: '$size' }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          mimeType: '$_id',
+          count: 1,
+          totalSize: 1
+        }
+      },
+      {
+        $sort: { count: -1 }
+      }
+    ]);
+
+    // Categorize file types
+    const fileTypeCategories = {
+      'Documents': ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'application/rtf'],
+      'Images': ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/bmp'],
+      'Videos': ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/flv', 'video/webm'],
+      'Audio': ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp3', 'audio/aac'],
+      'Other': []
+    };
+
+    const categorizedData = {};
+    fileTypeStats.forEach(item => {
+      let category = 'Other';
+      for (const [cat, types] of Object.entries(fileTypeCategories)) {
+        if (types.includes(item.mimeType)) {
+          category = cat;
+          break;
+        }
+      }
+
+      if (!categorizedData[category]) {
+        categorizedData[category] = { count: 0, totalSize: 0 };
+      }
+      categorizedData[category].count += item.count;
+      categorizedData[category].totalSize += item.totalSize;
+    });
+
+    const fileTypeData = Object.entries(categorizedData).map(([name, data]) => ({
+      name,
+      value: data.count,
+      totalSize: data.totalSize
+    }));
+
+    // User activity status (based on last login or activity)
+    // For now, we'll consider users who have logged in within the last 30 days as active
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const activeUsers = await User.countDocuments({
+      role: 'user',
+      lastLogin: { $gte: thirtyDaysAgo }
+    });
+
+    const inactiveUsers = await User.countDocuments({
+      role: 'user',
+      $or: [
+        { lastLogin: { $lt: thirtyDaysAgo } },
+        { lastLogin: { $exists: false } }
+      ]
+    });
+
+    const totalUsers = activeUsers + inactiveUsers;
+    const userActivityData = [
+      {
+        name: 'Active Users',
+        value: totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0
+      },
+      {
+        name: 'Inactive Users',
+        value: totalUsers > 0 ? Math.round((inactiveUsers / totalUsers) * 100) : 0
+      }
+    ];
+
+    res.json({
+      fileTypeData,
+      userActivityData
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get admin settings
+export const getAdminSettings = async (req, res) => {
+  try {
+    // For now, we'll return default settings. In a real app, these would be stored in a database
+    const settings = {
+      system: {
+        maxFileSize: 100 * 1024 * 1024, // 100MB
+        allowedFileTypes: ['image/*', 'video/*', 'audio/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.*', 'text/*'],
+        maintenanceMode: false,
+        maintenanceMessage: 'System is under maintenance. Please try again later.'
+      },
+      security: {
+        maxLoginAttempts: 5,
+        lockoutDuration: 15, // minutes
+        sessionTimeout: 60, // minutes
+        passwordMinLength: 8,
+        requireSpecialChars: true,
+        requireNumbers: true
+      },
+      userManagement: {
+        allowRegistration: true,
+        requireEmailVerification: true,
+        defaultUserRole: 'user',
+        maxUsersPerAccount: 1
+      },
+      storage: {
+        maxStoragePerUser: 1024 * 1024 * 1024, // 1GB
+        cleanupOldFiles: true,
+        cleanupAfterDays: 90,
+        compressionEnabled: true
+      },
+      notifications: {
+        emailEnabled: true,
+        smtpHost: '',
+        smtpPort: 587,
+        smtpUser: '',
+        smtpPassword: '',
+        fromEmail: 'noreply@cloudnest.com'
+      }
+    };
+
+    res.json(settings);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Update admin settings
+export const updateAdminSettings = async (req, res) => {
+  try {
+    const { category, settings } = req.body;
+
+    // Validate input
+    if (!category || !settings) {
+      return res.status(400).json({ message: 'Category and settings are required' });
+    }
+
+    // In a real application, you would save these to a database
+    // For now, we'll just return success
+    console.log(`Updating ${category} settings:`, settings);
+
+    res.json({
+      message: `${category} settings updated successfully`,
+      updatedSettings: settings
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Get analytics data
 export const getAnalyticsData = async (req, res) => {
   try {

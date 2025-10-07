@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FileText, FolderOpen, Users, BarChart3, HardDrive } from 'lucide-react';
+import { LayoutDashboard, FileText, FolderOpen, Users, BarChart3, HardDrive, Settings } from 'lucide-react';
 
 const AdminSidebar = ({ isCollapsed, setIsCollapsed }) => {
   const location = useLocation();
@@ -12,6 +12,7 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed }) => {
     { name: "Users Management", icon: Users, path: "/admin/users" },
     { name: "Analytics", icon: BarChart3, path: "/admin/analytics" },
     { name: "Storage Management", icon: HardDrive, path: "/admin/storage" },
+    { name: "Settings", icon: Settings, path: "/admin/settings" },
   ];
 
   return (

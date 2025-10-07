@@ -1,25 +1,35 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import API from '../utils/api';
 import AdminLayout from '../components/AdminLayout';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const response = await API.get('/admin/stats');
-        setStats(response.data);
+        const [statsResponse, analyticsResponse] = await Promise.all([
+          API.get('/admin/stats'),
+          API.get('/admin/dashboard-analytics')
+        ]);
+        setStats(statsResponse.data);
+        setAnalytics(analyticsResponse.data);
       } catch (err) {
-        setError('Failed to load platform stats');
+        setError('Failed to load dashboard data');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchStats();
+    fetchData();
   }, []);
 
   if (loading) {
@@ -108,16 +118,89 @@ const AdminDashboard = () => {
           </div>
         </div>
 
+        {/* Analytics Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">File Type Distribution</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={analytics?.fileTypeData || []}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} (${(percent * 100).toFixed(1)}%)`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {(analytics?.fileTypeData || []).map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+                          <p className="font-semibold text-gray-900">{data.name}</p>
+                          <p className="text-sm text-gray-600">{data.value} files ({((data.value / (analytics?.fileTypeData || []).reduce((sum, item) => sum + item.value, 0)) * 100).toFixed(1)}%)</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">User Activity Status</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={analytics?.userActivityData || []}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+                          <p className="font-semibold text-gray-900">{label}</p>
+                          <p className="text-sm text-gray-600">{payload[0].value}% of total users</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar dataKey="value" fill="#10B981" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+            <button
+              onClick={() => navigate('/admin/files')}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
               View All Files
             </button>
-            <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+            <button
+              onClick={() => navigate('/admin/users')}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+            >
               Manage Users
             </button>
-            <button className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+            <button
+              onClick={() => navigate('/admin/settings')}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            >
               System Settings
             </button>
           </div>

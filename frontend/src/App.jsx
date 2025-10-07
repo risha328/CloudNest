@@ -24,6 +24,7 @@ import AdminFiles from "./pages/AdminFiles";
 import AdminFolders from "./pages/AdminFolders";
 import AdminStorage from "./pages/AdminStorage";
 import AdminAnalytics from "./pages/AdminAnalytics";
+import AdminSettings from "./pages/AdminSettings";
 
 function AppContent() {
   const location = useLocation();
@@ -57,6 +58,7 @@ function AppContent() {
           <Route path="/admin/users" element={<AdminProtectedRoute><AdminUsers /></AdminProtectedRoute>} />
           <Route path="/admin/storage" element={<AdminProtectedRoute><AdminStorage /></AdminProtectedRoute>} />
           <Route path="/admin/analytics" element={<AdminProtectedRoute><AdminAnalytics /></AdminProtectedRoute>} />
+          <Route path="/admin/settings" element={<AdminProtectedRoute><AdminSettings /></AdminProtectedRoute>} />
 
         </Routes>
         {!isAdminRoute && <Footer />}
