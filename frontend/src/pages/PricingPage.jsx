@@ -38,7 +38,7 @@ const PricingPage = () => {
       name: "Professional",
       description: "Ideal for professionals and growing teams",
       monthlyPrice: "12",
-      annualPrice: "108", // $9/month equivalent - 25% savings
+      annualPrice: "9", // $9/month equivalent - 25% savings
       features: [
         "250GB secure storage",
         "Advanced password protection",
@@ -64,7 +64,7 @@ const PricingPage = () => {
       name: "Enterprise",
       description: "For organizations with advanced security needs",
       monthlyPrice: "39",
-      annualPrice: "348", // $29/month equivalent - 25% savings
+      annualPrice: "29", // $29/month equivalent - 25% savings
       features: [
         "2TB secure storage",
         "All Professional features",
