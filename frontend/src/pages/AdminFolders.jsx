@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import AdminLayout from '../components/AdminLayout';
 
 const AdminFolders = () => {
+  const navigate = useNavigate();
   const [folders, setFolders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -149,7 +151,7 @@ const AdminFolders = () => {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/admin/analytics')}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Today</p>
@@ -165,7 +167,7 @@ const AdminFolders = () => {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/admin/analytics')}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg. Access</p>

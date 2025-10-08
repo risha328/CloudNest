@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import API from '../utils/api';
 import AdminLayout from '../components/AdminLayout';
 import {
@@ -8,6 +9,7 @@ import {
 } from 'recharts';
 
 const AdminAnalytics = () => {
+  const navigate = useNavigate();
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -45,12 +47,12 @@ const AdminAnalytics = () => {
     const units = ['B', 'KB', 'MB', 'GB', 'TB'];
     let size = bytes;
     let unitIndex = 0;
-    
+
     while (size >= 1024 && unitIndex < units.length - 1) {
       size /= 1024;
       unitIndex++;
     }
-    
+
     return `${size.toFixed(1)} ${units[unitIndex]}`;
   };
 
@@ -142,8 +144,11 @@ const AdminAnalytics = () => {
     return null;
   };
 
-  const StatCard = ({ title, value, change, icon, color, format }) => (
-    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+  const StatCard = ({ title, value, change, icon, color, format, onClick }) => (
+    <div
+      className={`bg-white p-6 rounded-xl border border-gray-200 shadow-sm ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
+      onClick={onClick}
+    >
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600">{title}</p>
@@ -211,7 +216,7 @@ const AdminAnalytics = () => {
               Comprehensive insights and performance metrics
             </p>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <div className="flex bg-gray-100 rounded-lg p-1">
               {TIME_RANGES.map((range) => (
@@ -228,7 +233,7 @@ const AdminAnalytics = () => {
                 </button>
               ))}
             </div>
-            
+
             <button
               onClick={fetchAnalyticsData}
               className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2"
@@ -266,6 +271,7 @@ const AdminAnalytics = () => {
             change={realTimeStats.userGrowth}
             icon="👥"
             color="text-blue-600"
+            onClick={() => navigate('/admin/users')}
           />
           <StatCard
             title="Total Files"
@@ -273,6 +279,7 @@ const AdminAnalytics = () => {
             change={realTimeStats.fileGrowth}
             icon="📁"
             color="text-green-600"
+            onClick={() => navigate('/admin/files')}
           />
           <StatCard
             title="Total Downloads"
@@ -425,7 +432,7 @@ const AdminAnalytics = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip 
+                    <Tooltip
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           const data = payload[0].payload;
@@ -527,7 +534,7 @@ const AdminAnalytics = () => {
                   <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
                     <span className="text-blue-800 font-medium">Last Scan</span>
                     <span className="text-blue-600 font-bold text-sm">
-                      {analyticsData?.securityStats?.lastScan 
+                      {analyticsData?.securityStats?.lastScan
                         ? formatDate(analyticsData.securityStats.lastScan)
                         : 'Never'
                       }

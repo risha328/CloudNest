@@ -61,7 +61,7 @@ const AdminDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="bg-white p-6 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/admin/users')}>
             <div className="flex items-center">
               <div className="p-3 bg-blue-100 rounded-full">
                 <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,7 +75,7 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="bg-white p-6 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/admin/files')}>
             <div className="flex items-center">
               <div className="p-3 bg-green-100 rounded-full">
                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,7 +89,7 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="bg-white p-6 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/admin/analytics')}>
             <div className="flex items-center">
               <div className="p-3 bg-yellow-100 rounded-full">
                 <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,7 +103,7 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="bg-white p-6 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/admin/storage')}>
             <div className="flex items-center">
               <div className="p-3 bg-purple-100 rounded-full">
                 <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

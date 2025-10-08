@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import AdminLayout from '../components/AdminLayout';
 
 const AdminUsers = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -298,8 +300,11 @@ const AdminUsers = () => {
               </div>
             </div>
           </div>
-          
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+
+          <div
+            className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => navigate('/admin/analytics')}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Users</p>
@@ -310,8 +315,11 @@ const AdminUsers = () => {
               </div>
             </div>
           </div>
-          
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+
+          <div
+            className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => navigate('/admin/analytics')}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Suspended</p>
@@ -322,8 +330,11 @@ const AdminUsers = () => {
               </div>
             </div>
           </div>
-          
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+
+          <div
+            className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => navigate('/admin/analytics')}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Administrators</p>

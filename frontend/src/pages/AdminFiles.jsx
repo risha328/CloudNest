@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import AdminLayout from '../components/AdminLayout';
 
 const AdminFiles = () => {
+  const navigate = useNavigate();
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -242,8 +244,8 @@ const AdminFiles = () => {
               </div>
             </div>
           </div>
-          
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+
+          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/admin/analytics')}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Views</p>
@@ -254,8 +256,8 @@ const AdminFiles = () => {
               </div>
             </div>
           </div>
-          
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+
+          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/admin/analytics')}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Downloads</p>
@@ -266,8 +268,8 @@ const AdminFiles = () => {
               </div>
             </div>
           </div>
-          
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+
+          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/admin/storage')}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Storage Used</p>
