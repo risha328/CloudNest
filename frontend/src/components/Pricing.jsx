@@ -130,14 +130,14 @@ const Pricing = () => {
                 key={index}
                 className={`relative rounded-2xl border-2 ${
                   plan.popular
-                    ? 'border-blue-500 shadow-2xl transform scale-105'
+                    ? 'border-purple-500 shadow-2xl transform scale-105'
                     : 'border-gray-200 shadow-lg'
                 } bg-white p-8 flex flex-col h-full`}
               >
                 {/* Popular Badge */}
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                    <span className="bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
                       Most Popular
                     </span>
                   </div>
@@ -221,7 +221,7 @@ const Pricing = () => {
                 <button
                   className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all duration-200 ${
                     plan.popular
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl'
+                      ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg hover:shadow-xl'
                       : plan.monthlyPrice === "0"
                       ? 'bg-gray-900 hover:bg-gray-800 text-white'
                       : 'bg-gray-100 hover:bg-gray-200 text-gray-900 border-2 border-gray-300'

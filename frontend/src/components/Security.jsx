@@ -57,7 +57,7 @@ const Security = () => {
           </div>
 
           {/* Right Content - Security Visual */}
-          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-8 text-white">
+          <div className="bg-gradient-to-br from-purple-600 to-purple-900 rounded-2xl p-8 text-white">
             <div className="text-center">
               <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,18 +65,18 @@ const Security = () => {
                 </svg>
               </div>
               <h3 className="text-2xl font-bold mb-4">Security First</h3>
-              <p className="text-blue-100 mb-6 leading-relaxed">
+              <p className="text-purple-100 mb-6 leading-relaxed">
                 Every file is individually encrypted with AES-256 encryption. 
                 Passwords are hashed using bcrypt and never stored in plain text.
               </p>
               <div className="grid grid-cols-2 gap-4 text-center">
                 <div>
                   <div className="text-2xl font-bold">AES-256</div>
-                  <div className="text-blue-200 text-sm">Encryption</div>
+                  <div className="text-purple-200 text-sm">Encryption</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold">TLS 1.3</div>
-                  <div className="text-blue-200 text-sm">In Transit</div>
+                  <div className="text-purple-200 text-sm">In Transit</div>
                 </div>
               </div>
             </div>

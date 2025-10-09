@@ -18,9 +18,21 @@ const Navbar = () => {
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center hover:scale-110 hover:rotate-3 transition-all duration-300">
+              <style dangerouslySetInnerHTML={{__html: `
+                @keyframes draw {
+                  to {
+                    stroke-dashoffset: 0;
+                  }
+                }
+                .logo-path {
+                  stroke-dasharray: 100;
+                  stroke-dashoffset: 100;
+                  animation: draw 2s ease-in-out forwards;
+                }
+              `}} />
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                <path pathLength="100" className="logo-path" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
               </svg>
             </div>
             <span className="text-2xl font-bold text-gray-900">CloudNest</span>
@@ -28,22 +40,22 @@ const Navbar = () => {
 
           {/* Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <a href="/features" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+            <a href="/features" className="text-gray-600 hover:text-purple-600 font-medium transition-colors">
               Features
             </a>
-            <a href="/how-it-works" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+            <a href="/how-it-works" className="text-gray-600 hover:text-purple-600 font-medium transition-colors">
               How It Works
             </a>
-            <a href="/security" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+            <a href="/security" className="text-gray-600 hover:text-purple-600 font-medium transition-colors">
               Security
             </a>
-            <a href="/pricing" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+            <a href="/pricing" className="text-gray-600 hover:text-purple-600 font-medium transition-colors">
               Pricing
             </a>
-            <a href="/blog" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+            <a href="/blog" className="text-gray-600 hover:text-purple-600 font-medium transition-colors">
               Blog
             </a>
-            <a href="/contact" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+            <a href="/contact" className="text-gray-600 hover:text-purple-600 font-medium transition-colors">
               Contact
             </a>
           </nav>
@@ -53,7 +65,7 @@ const Navbar = () => {
             <div className="relative">
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg hover:bg-blue-700 transition-colors"
+                className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-lg hover:bg-purple-700 transition-colors"
               >
                 {user.email.charAt(0).toUpperCase()}
               </button>
@@ -78,10 +90,10 @@ const Navbar = () => {
             </div>
           ) : (
             <div className="flex items-center space-x-4">
-              <Link to="/login" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+              <Link to="/login" className="text-gray-600 hover:text-purple-600 font-medium transition-colors">
                 Sign In
               </Link>
-              <Link to="/signup" className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm">
+              <Link to="/signup" className="bg-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors shadow-sm">
                 Get Started
               </Link>
             </div>

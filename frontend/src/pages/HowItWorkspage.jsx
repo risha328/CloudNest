@@ -70,20 +70,20 @@ const HowItWorksPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-violet-50">
       {/* Hero Section */}
-      <section className="relative py-20 bg-gradient-to-r from-blue-900 to-indigo-900 text-white overflow-hidden">
+      <section className="relative py-20 bg-gradient-to-r from-purple-500 to-violet-500 text-white overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className={`text-5xl md:text-6xl font-bold mb-6 transition-all duration-700 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
               How CloudNest Works
             </h1>
-            <p className={`text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto mb-8 transition-all duration-700 delay-200 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+            <p className={`text-xl md:text-2xl text-purple-100 max-w-3xl mx-auto mb-8 transition-all duration-700 delay-200 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
               Enterprise-grade file security and sharing made simple. Protect your sensitive data with our four-step process.
             </p>
             <div className={`flex flex-col sm:flex-row gap-4 justify-center transition-all duration-700 delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-              <button className="bg-white text-blue-900 px-8 py-4 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-300 shadow-lg">
+              <button className="bg-white text-purple-600 px-8 py-4 rounded-lg font-semibold hover:bg-purple-50 transition-colors duration-300 shadow-lg">
                 Start Free Trial
               </button>
               <button className="border border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white/10 transition-colors duration-300">
@@ -103,7 +103,7 @@ const HowItWorksPage = () => {
                 key={index}
                 className="text-center transition-all duration-500 delay-100 transform hover:scale-105"
               >
-                <div className="text-3xl md:text-4xl font-bold text-blue-900 mb-2">
+                <div className="text-3xl md:text-4xl font-bold text-purple-600 mb-2">
                   {stat.number}
                 </div>
                 <div className="text-gray-600 font-medium">
@@ -131,7 +131,7 @@ const HowItWorksPage = () => {
           {/* Steps */}
           <div className="relative">
             {/* Connecting Line */}
-            <div className="hidden lg:block absolute top-16 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-200 via-indigo-200 to-purple-200 transform -translate-y-1/2"></div>
+            <div className="hidden lg:block absolute top-16 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-200 via-violet-200 to-purple-200 transform -translate-y-1/2"></div>
             
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-6">
               {steps.map((step, index) => (
@@ -141,12 +141,12 @@ const HowItWorksPage = () => {
                 >
                   {/* Step Number & Connector */}
                   <div className="flex flex-col items-center">
-                    <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl flex items-center justify-center text-2xl font-bold mb-6 z-10 relative shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
+                    <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-violet-700 text-white rounded-2xl flex items-center justify-center text-2xl font-bold mb-6 z-10 relative shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
                       {step.step}
                     </div>
                     
                     {/* Content Card */}
-                    <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 group-hover:shadow-2xl group-hover:border-blue-200 transition-all duration-300 h-full">
+                    <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 group-hover:shadow-2xl group-hover:border-purple-200 transition-all duration-300 h-full">
                       <div className="text-4xl mb-6 text-center">{step.icon}</div>
                       <h3 className="text-2xl font-semibold text-gray-900 mb-4 text-center">
                         {step.title}
@@ -176,7 +176,7 @@ const HowItWorksPage = () => {
       </section>
 
       {/* Security Features */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50/50">
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-purple-50/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -189,9 +189,9 @@ const HowItWorksPage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {securityFeatures.map((feature, index) => (
-              <div 
+              <div
                 key={index}
-                className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl hover:border-blue-200 transition-all duration-300 group"
+                className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl hover:border-purple-200 transition-all duration-300 group"
               >
                 <div className="text-4xl mb-6 text-center group-hover:scale-110 transition-transform duration-300">
                   {feature.icon}
@@ -209,23 +209,23 @@ const HowItWorksPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-900 to-indigo-900 text-white">
+      <section className="py-20 bg-gradient-to-r from-purple-900 to-violet-900 text-white">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-bold mb-6">
             Ready to Secure Your Files?
           </h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto">
             Join thousands of enterprises that trust CloudNest for their secure file sharing needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white text-blue-900 px-8 py-4 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-300 shadow-lg transform hover:scale-105">
+            <button className="bg-white text-purple-900 px-8 py-4 rounded-lg font-semibold hover:bg-purple-50 transition-colors duration-300 shadow-lg transform hover:scale-105">
               Get Started Free
             </button>
             <button className="border border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white/10 transition-colors duration-300">
               Contact Sales
             </button>
           </div>
-          <p className="text-blue-200 mt-6">
+          <p className="text-purple-200 mt-6">
             No credit card required • 14-day free trial • Cancel anytime
           </p>
         </div>

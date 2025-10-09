@@ -29,7 +29,7 @@ const PricingPage = () => {
       ],
       popular: false,
       cta: "Current Plan",
-      color: "from-gray-500 to-gray-600",
+      color: "from-purple-400 to-purple-500",
       badge: "Free Forever"
     },
     {
@@ -47,7 +47,7 @@ const PricingPage = () => {
       ],
       popular: true,
       cta: activePlan === 'pro' ? "Pro Active" : "Activate Pro",
-      color: "from-blue-500 to-cyan-500",
+      color: "from-purple-500 to-violet-500",
       badge: "Most Popular"
     }
   ];
@@ -76,18 +76,18 @@ const PricingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-violet-50/30">
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full">
-          <div className="absolute top-10 left-10 w-72 h-72 bg-blue-200/20 rounded-full blur-3xl"></div>
-          <div className="absolute top-40 right-10 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 left-1/2 w-80 h-80 bg-cyan-200/20 rounded-full blur-3xl"></div>
+          <div className="absolute top-10 left-10 w-72 h-72 bg-purple-200/20 rounded-full blur-3xl"></div>
+          <div className="absolute top-40 right-10 w-96 h-96 bg-violet-200/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 left-1/2 w-80 h-80 bg-violet-200/20 rounded-full blur-3xl"></div>
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className={`transition-all duration-1000 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-              Simple, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-600">Transparent</span> Pricing
+              Simple, <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-violet-600">Transparent</span> Pricing
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto mb-8 leading-relaxed">
               Start free, scale as you grow. Enterprise-grade security at every plan.
@@ -110,7 +110,7 @@ const PricingPage = () => {
                 {/* Popular Badge */}
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20">
-                    <span className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl shadow-blue-500/25">
+                    <span className="bg-gradient-to-r from-purple-500 to-violet-500 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl shadow-purple-500/25">
                       ⭐ {plan.badge}
                     </span>
                   </div>
@@ -118,8 +118,8 @@ const PricingPage = () => {
 
                 {/* Plan Card */}
                 <div className={`relative h-full rounded-3xl border-2 ${
-                  plan.popular 
-                    ? 'border-blue-500/50 shadow-2xl' 
+                  plan.popular
+                    ? 'border-purple-500/50 shadow-2xl'
                     : 'border-gray-200/50 shadow-xl'
                 } bg-white/80 backdrop-blur-sm overflow-hidden`}>
                   
@@ -130,7 +130,7 @@ const PricingPage = () => {
                     {/* Plan Header */}
                     <div className="text-center mb-8">
                       {!plan.popular && plan.badge && (
-                        <span className="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-semibold mb-4">
+                        <span className="inline-block bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-semibold mb-4">
                           {plan.badge}
                         </span>
                       )}
@@ -143,8 +143,8 @@ const PricingPage = () => {
                       <ul className="space-y-4">
                         {plan.features.map((feature, featureIndex) => (
                           <li key={featureIndex} className="flex items-start">
-                            <div className="bg-green-100 rounded-full p-1 mr-3 mt-1">
-                              <svg className="h-4 w-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <div className="bg-purple-100 rounded-full p-1 mr-3 mt-1">
+                              <svg className="h-4 w-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                               </svg>
                             </div>
@@ -160,8 +160,8 @@ const PricingPage = () => {
                       onClick={plan.name === 'Pro' ? handleActivatePro : undefined}
                       className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 shadow-lg ${
                         plan.popular
-                          ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white hover:shadow-2xl hover:shadow-blue-500/25 transform hover:scale-105'
-                          : 'bg-gray-900 text-white'
+                          ? 'bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white hover:shadow-2xl hover:shadow-purple-500/25 transform hover:scale-105'
+                          : 'bg-purple-900 text-white'
                       } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       {loading && plan.name === 'Pro' ? 'Activating...' : plan.cta}

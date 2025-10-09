@@ -30,7 +30,7 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section id="how-it-works" className="py-16 bg-gradient-to-br from-blue-50 to-indigo-100">
+    <section id="how-it-works" className="py-16 bg-gradient-to-br from-purple-50 to-purple-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -47,13 +47,13 @@ const HowItWorks = () => {
           {steps.map((step, index) => (
             <div key={index} className="relative text-center">
               {/* Step Number */}
-              <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6 z-10 relative">
+              <div className="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6 z-10 relative">
                 {step.step}
               </div>
               
               {/* Connecting Line */}
               {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-8 left-1/2 w-full h-0.5 bg-blue-200 -z-10"></div>
+                <div className="hidden lg:block absolute top-8 left-1/2 w-full h-0.5 bg-purple-200 -z-10"></div>
               )}
               
               {/* Content */}

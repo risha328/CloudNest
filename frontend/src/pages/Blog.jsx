@@ -113,13 +113,13 @@ const Blog = () => {
   const featuredPosts = blogPosts.filter(post => post.featured);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-purple-50">
       {/* Header */}
       {/* <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex justify-between items-center">
             <Link to="/" className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-violet-600 rounded-xl flex items-center justify-center shadow-lg">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
                 </svg>
@@ -127,13 +127,13 @@ const Blog = () => {
               <span className="text-2xl font-bold text-gray-900">CloudNest</span>
             </Link>
             <nav className="flex space-x-8">
-              <Link to="/" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+              <Link to="/" className="text-purple-600 hover:text-purple-600 font-medium transition-colors">
                 Home
               </Link>
-              <Link to="/blog" className="text-blue-600 font-medium">
+              <Link to="/blog" className="text-purple-600 font-medium">
                 Blog
               </Link>
-              <Link to="/contact" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+              <Link to="/contact" className="text-purple-600 hover:text-purple-600 font-medium transition-colors">
                 Contact
               </Link>
             </nav>
@@ -142,19 +142,19 @@ const Blog = () => {
       </header> */}
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white py-20">
+      <section className="bg-gradient-to-br from-purple-600 to-violet-600 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">CloudNest Blog</h1>
-          <p className="text-xl text-blue-100 max-w-3xl mx-auto mb-8">
+          <p className="text-xl text-purple-100 max-w-3xl mx-auto mb-8">
             Insights, updates, and best practices for secure file storage and sharing
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <input
               type="text"
               placeholder="Search articles..."
-              className="px-6 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full max-w-md"
+              className="px-6 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 w-full max-w-md"
             />
-            <button className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+            <button className="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-purple-100 transition-colors">
               Search
             </button>
           </div>
@@ -163,14 +163,14 @@ const Blog = () => {
 
       {/* Featured Posts */}
       {activeCategory === 'all' && (
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-purple-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-8">Featured Articles</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {featuredPosts.map((post) => (
-                <article key={post.id} className="bg-gray-50 rounded-2xl p-6 hover:shadow-lg transition-shadow border border-gray-200">
+                <article key={post.id} className="bg-purple-50 rounded-2xl p-6 hover:shadow-lg transition-shadow border border-purple-200">
                   <div className="flex items-center justify-between mb-4">
-                    <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                    <span className="bg-purple-100 text-purple-800 text-sm font-medium px-3 py-1 rounded-full">
                       {categories.find(cat => cat.id === post.category)?.name}
                     </span>
                     <span className="text-gray-500 text-sm">{post.readTime}</span>
@@ -180,7 +180,7 @@ const Blog = () => {
                   <p className="text-gray-600 mb-4">{post.excerpt}</p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold">
+                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-semibold">
                         {post.author.avatar}
                       </div>
                       <div>
@@ -208,8 +208,8 @@ const Blog = () => {
                 onClick={() => setActiveCategory(category.id)}
                 className={`px-6 py-3 rounded-lg font-medium transition-colors ${
                   activeCategory === category.id
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-purple-700 hover:bg-purple-100 border border-purple-200'
                 }`}
               >
                 {category.name}
@@ -220,9 +220,9 @@ const Blog = () => {
           {/* Blog Posts Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredPosts.map((post) => (
-              <article key={post.id} className="bg-white rounded-2xl p-6 hover:shadow-xl transition-all duration-300 border border-gray-200">
+              <article key={post.id} className="bg-purple-50 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 border border-purple-200">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="bg-gray-100 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">
+                  <span className="bg-purple-100 text-purple-800 text-sm font-medium px-3 py-1 rounded-full">
                     {categories.find(cat => cat.id === post.category)?.name}
                   </span>
                   <span className="text-gray-500 text-sm">{post.readTime}</span>
@@ -232,7 +232,7 @@ const Blog = () => {
                 <p className="text-gray-600 mb-4 line-clamp-3">{post.excerpt}</p>
                 <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-sm font-semibold">
+                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 text-sm font-semibold">
                       {post.author.avatar}
                     </div>
                     <div>
@@ -247,7 +247,7 @@ const Blog = () => {
 
           {/* Load More */}
           <div className="text-center mt-12">
-            <button className="bg-white border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:border-blue-400 hover:text-blue-600 transition-colors">
+            <button className="bg-white border-2 border-purple-300 text-purple-700 px-8 py-3 rounded-lg font-semibold hover:border-purple-400 hover:text-purple-600 transition-colors">
               Load More Articles
             </button>
           </div>
@@ -255,7 +255,7 @@ const Blog = () => {
       </section>
 
       {/* Newsletter */}
-      <section className="py-16 bg-gray-900 text-white">
+      <section className="py-16 bg-purple-900 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-4">Stay Updated</h2>
           <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
@@ -265,9 +265,9 @@ const Blog = () => {
             <input
               type="email"
               placeholder="Enter your email"
-              className="px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1"
+              className="px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 flex-1"
             />
-            <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+            <button className="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors">
               Subscribe
             </button>
           </div>

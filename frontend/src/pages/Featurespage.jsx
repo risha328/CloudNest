@@ -269,32 +269,32 @@ const Features = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-violet-50">
       {/* Hero Section */}
-      <section className="relative py-20 bg-gradient-to-r from-blue-500 to-cyan-500 text-white overflow-hidden">
+      <section className="relative py-20 bg-gradient-to-r from-purple-500 to-violet-500 text-white overflow-hidden">
         <div className="absolute inset-0 bg-white/10"></div>
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/20 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-cyan-300/30 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-blue-300/30 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-violet-300/30 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-purple-300/30 rounded-full blur-3xl"></div>
         </div>
-        
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className={`transition-all duration-1000 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
             <h1 className="text-5xl md:text-6xl font-bold mb-6">
               Powerful Features for{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-100">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-100">
                 Secure File Management
               </span>
             </h1>
-            <p className="text-xl text-blue-100 max-w-3xl mx-auto mb-8 leading-relaxed">
-              Discover how CloudNest combines enterprise-grade security with intuitive file management 
+            <p className="text-xl text-purple-100 max-w-3xl mx-auto mb-8 leading-relaxed">
+              Discover how CloudNest combines enterprise-grade security with intuitive file management
               to protect your most important files with individual password protection.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link 
-                to="/signup" 
-                className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-50 transition-all duration-300 shadow-2xl transform hover:scale-105"
+              <Link
+                to="/signup"
+                className="bg-white text-purple-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-purple-50 transition-all duration-300 shadow-2xl transform hover:scale-105"
               >
                 Start Free Trial
               </Link>
@@ -307,7 +307,7 @@ const Features = () => {
       </section>
 
       {/* Category Navigation */}
-      <section className="py-12 bg-white border-b border-blue-100">
+      <section className="py-12 bg-white border-b border-purple-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
@@ -317,7 +317,7 @@ const Features = () => {
               Comprehensive tools designed to secure, manage, and share your files with confidence
             </p>
           </div>
-          
+
           <div className="flex flex-wrap justify-center gap-4">
             {categories.map((category) => (
               <button
@@ -325,14 +325,14 @@ const Features = () => {
                 onClick={() => setActiveCategory(category.id)}
                 className={`flex flex-col items-center p-6 rounded-2xl min-w-[140px] transition-all duration-300 border-2 ${
                   activeCategory === category.id
-                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 border-transparent transform scale-105'
-                    : 'bg-white text-gray-700 hover:bg-blue-50 border-blue-100 hover:border-blue-300'
+                    ? 'bg-gradient-to-r from-purple-500 to-violet-500 text-white shadow-lg shadow-purple-500/25 border-transparent transform scale-105'
+                    : 'bg-white text-gray-700 hover:bg-purple-50 border-purple-100 hover:border-purple-300'
                 }`}
               >
                 <span className="text-3xl mb-3">{category.icon}</span>
                 <span className="font-semibold mb-1">{category.name}</span>
                 <span className={`text-xs ${
-                  activeCategory === category.id ? 'text-blue-100' : 'text-gray-500'
+                  activeCategory === category.id ? 'text-purple-100' : 'text-gray-500'
                 }`}>
                   {category.description}
                 </span>
@@ -359,9 +359,9 @@ const Features = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {features[activeCategory].map((feature, index) => (
-              <div 
-                key={index} 
-                className="group bg-white rounded-2xl p-8 hover:shadow-2xl transition-all duration-500 border-2 border-blue-100 hover:border-blue-300 transform hover:scale-105"
+              <div
+                key={index}
+                className="group bg-white rounded-2xl p-8 hover:shadow-2xl transition-all duration-500 border-2 border-purple-100 hover:border-purple-300 transform hover:scale-105"
               >
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex items-center space-x-4">
@@ -374,18 +374,18 @@ const Features = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <ul className="space-y-4">
                   {feature.details.map((detail, detailIndex) => (
-                    <li key={detailIndex} className="flex items-center space-x-4 p-3 bg-blue-50 rounded-xl group-hover:bg-blue-100 transition-colors duration-300">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                    <li key={detailIndex} className="flex items-center space-x-4 p-3 bg-purple-50 rounded-xl group-hover:bg-purple-100 transition-colors duration-300">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full flex-shrink-0"></div>
                       <span className="text-gray-700 font-medium">{detail}</span>
                     </li>
                   ))}
                 </ul>
-                
-                <div className="mt-8 pt-6 border-t border-blue-100">
-                  <button className="text-blue-600 hover:text-blue-700 font-semibold flex items-center space-x-2 group">
+
+                <div className="mt-8 pt-6 border-t border-purple-100">
+                  <button className="text-purple-600 hover:text-purple-700 font-semibold flex items-center space-x-2 group">
                     <span>Learn more about this feature</span>
                     <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -399,23 +399,23 @@ const Features = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-white border-t border-b border-blue-100">
+      <section className="py-16 bg-white border-t border-b border-purple-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
             <div className="p-6">
-              <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">99.9%</div>
+              <div className="text-4xl md:text-5xl font-bold text-purple-600 mb-2">99.9%</div>
               <div className="text-gray-600 font-semibold">Uptime SLA</div>
             </div>
             <div className="p-6">
-              <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">256-bit</div>
+              <div className="text-4xl md:text-5xl font-bold text-purple-600 mb-2">256-bit</div>
               <div className="text-gray-600 font-semibold">Encryption</div>
             </div>
             <div className="p-6">
-              <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">150+</div>
+              <div className="text-4xl md:text-5xl font-bold text-purple-600 mb-2">150+</div>
               <div className="text-gray-600 font-semibold">Countries Served</div>
             </div>
             <div className="p-6">
-              <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">10M+</div>
+              <div className="text-4xl md:text-5xl font-bold text-purple-600 mb-2">10M+</div>
               <div className="text-gray-600 font-semibold">Files Secured</div>
             </div>
           </div>
@@ -423,19 +423,19 @@ const Features = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
+      <section className="py-20 bg-gradient-to-r from-purple-500 to-violet-500 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             Ready to Experience CloudNest?
           </h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Join thousands of businesses and individuals who trust CloudNest with their sensitive files. 
+          <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Join thousands of businesses and individuals who trust CloudNest with their sensitive files.
             Get started with our free plan today.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/signup"
-              className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-50 transition-all duration-300 shadow-2xl transform hover:scale-105"
+              className="bg-white text-purple-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-purple-50 transition-all duration-300 shadow-2xl transform hover:scale-105"
             >
               Start Free Trial
             </Link>
@@ -446,7 +446,7 @@ const Features = () => {
               Schedule Demo
             </Link>
           </div>
-          <p className="text-blue-100 mt-6 text-sm">
+          <p className="text-purple-100 mt-6 text-sm">
             No credit card required • 14-day free trial on paid plans • Cancel anytime
           </p>
         </div>
