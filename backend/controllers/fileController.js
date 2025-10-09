@@ -31,6 +31,18 @@ export const uploadFile = async (req, res) => {
       });
     }
 
+    // Check file count limits per folder for free users
+    if (folderId && req.user.plan === 'free') {
+      const fileCount = await File.countDocuments({ folderId, ownerId: req.user._id });
+      if (fileCount >= 3) {
+        // Delete the uploaded file
+        fs.unlinkSync(req.file.path);
+        return res.status(400).json({
+          message: "Free plan allows only 3 files per folder. Please upgrade to Pro for unlimited files."
+        });
+      }
+    }
+
     // Scan file for malware (disabled temporarily)
     /*
     try {

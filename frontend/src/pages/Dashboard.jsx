@@ -233,6 +233,8 @@ import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import API, { toggleFavorite as toggleFavAPI, getFavorites as getFavAPI } from "../utils/api";
 import { AuthContext } from "../context/AuthContext";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -401,7 +403,11 @@ const Dashboard = () => {
       setIsCreateFolderModalOpen(false);
       setTimeout(() => setFolderMessage(""), 3000);
     } catch (error) {
-      setFolderMessage("Failed to create folder");
+      if (error.response && error.response.data && error.response.data.message && error.response.data.message.includes("Free plan allows only 5 folders")) {
+        toast.error("Free plan allows only 5 folders. Please upgrade to Pro for unlimited folders.");
+      } else {
+        setFolderMessage("Failed to create folder");
+      }
       console.error(error);
     }
   };
@@ -457,7 +463,7 @@ const Dashboard = () => {
         return { success: true, fileName: file.name };
       } catch (error) {
         console.error(`Failed to upload ${file.name}:`, error);
-        return { success: false, fileName: file.name, error: error.message };
+        return { success: false, fileName: file.name, error: error.response?.data?.message || error.message };
       }
     });
 
@@ -474,6 +480,10 @@ const Dashboard = () => {
 
       if (failedUploads.length > 0) {
         setUploadMessage(prev => prev + `. ${failedUploads.length} file(s) failed to upload.`);
+        if (failedUploads.some(f => f.error && f.error.includes("Free plan allows only 3 files per folder"))) {
+          console.log("Setting toast for file limit");
+          toast.error("Free plan allows only 3 files per folder. Please upgrade to Pro for unlimited files.");
+        }
       }
 
       setUploadFiles([]);
@@ -1374,6 +1384,7 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+      <ToastContainer />
     </div>
   );
 };

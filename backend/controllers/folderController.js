@@ -12,6 +12,16 @@ export const createFolder = async (req, res) => {
     const { name } = req.body;
     if (!name) return res.status(400).json({ message: "Folder name is required" });
 
+    // Check folder count limits for free users
+    if (req.user.plan === 'free') {
+      const folderCount = await Folder.countDocuments({ ownerId: req.user._id });
+      if (folderCount >= 5) {
+        return res.status(400).json({
+          message: "Free plan allows only 5 folders. Please upgrade to Pro for unlimited folders."
+        });
+      }
+    }
+
     const folder = new Folder({
       ownerId: req.user._id,
       name
