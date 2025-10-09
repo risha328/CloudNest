@@ -20,6 +20,17 @@ export const uploadFile = async (req, res) => {
     if (!req.file)
         return res.status(400).json({ message: "File is required" });
 
+    // Check file size limits based on plan
+    const maxFileSize = req.user.plan === 'pro' ? 5368709120 : 104857600; // 5GB for pro, 100MB for free
+    if (req.file.size > maxFileSize) {
+      // Delete the uploaded file
+      fs.unlinkSync(req.file.path);
+      const limitText = req.user.plan === 'pro' ? '5GB' : '100MB';
+      return res.status(400).json({
+        message: `File size exceeds ${limitText} limit for your plan. Please upgrade to Pro for larger files.`
+      });
+    }
+
     // Scan file for malware (disabled temporarily)
     /*
     try {
@@ -144,6 +155,15 @@ export const accessFile = async (req, res) => {
     // check expiry
     if (file.expiresAt && new Date() > file.expiresAt) {
       return res.status(410).json({ message: "File has expired" });
+    }
+
+    // Enforce retention limits for free users (30 days)
+    if (req.user.plan !== 'pro') {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      if (file.createdAt < thirtyDaysAgo) {
+        return res.status(410).json({ message: "File has expired due to retention policy. Upgrade to Pro for unlimited retention." });
+      }
     }
 
     // check maxDownloads
@@ -348,9 +368,13 @@ export const getStorageStats = async (req, res) => {
 
     const used = stats.length > 0 ? stats[0].totalSize : 0;
     const filesCount = stats.length > 0 ? stats[0].filesCount : 0;
-    const total = 5368709120; // 5GB in bytes
 
-    res.json({ used, total, filesCount });
+    // Dynamic storage limits based on plan
+    const total = req.user.plan === 'pro' ? 268435456000 : 5368709120; // 250GB for pro, 5GB for free
+
+    const percentage = total > 0 ? ((used / total) * 100).toFixed(2) : 0;
+
+    res.json({ used, total, filesCount, percentage });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

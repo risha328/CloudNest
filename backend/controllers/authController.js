@@ -48,6 +48,7 @@ export const login = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      plan: user.plan,
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -111,6 +112,7 @@ export const adminLogin = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      plan: user.plan,
       token: generateToken(user._id),
     });
   } catch (error) {

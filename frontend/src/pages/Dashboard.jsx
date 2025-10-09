@@ -508,7 +508,8 @@ const Dashboard = () => {
   };
 
   const formatStoragePercentage = () => {
-    return ((storageStats.used / storageStats.total) * 100).toFixed(1);
+    const percentage = (storageStats.used / storageStats.total) * 100;
+    return percentage.toFixed(2);
   };
 
   // Permission functions
@@ -630,8 +631,36 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Storage Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Subscription Plan & Storage Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Current Plan</h3>
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                user && user.plan === 'pro' ? 'bg-gradient-to-r from-blue-500 to-cyan-500' : 'bg-gray-100'
+              }`}>
+                <svg className={`w-4 h-4 ${user && user.plan === 'pro' ? 'text-white' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                </svg>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className={`text-2xl font-bold ${user && user.plan === 'pro' ? 'text-blue-600' : 'text-gray-900'}`}>
+                {user && user.plan === 'pro' ? 'Pro' : 'Free'}
+              </p>
+              <p className="text-sm text-gray-600">
+                {user && user.plan === 'pro' ? 'You are on Pro plan' : 'Upgrade to Pro for more features'}
+              </p>
+              {!(user && user.plan === 'pro') && (
+                <button
+                  onClick={() => navigate('/pricing')}
+                  className="mt-3 w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-blue-600 hover:to-cyan-600 transition-colors"
+                >
+                  Upgrade to Pro
+                </button>
+              )}
+            </div>
+          </div>
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Storage Used</h3>
@@ -646,13 +675,16 @@ const Dashboard = () => {
                 <span>{formatFileSize(storageStats.used)} used</span>
                 <span>{formatFileSize(storageStats.total)} total</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+              <div className="w-full bg-gray-200 rounded-full h-1">
+                <div
+                  className="bg-blue-600 h-1 rounded-full transition-all duration-300"
                   style={{ width: `${formatStoragePercentage()}%` }}
                 ></div>
               </div>
               <p className="text-xs text-gray-500">{formatStoragePercentage()}% of storage used</p>
+                <p className="text-xs text-gray-400">
+                  {user && user.plan === 'pro' ? 'Pro Plan: 250GB storage, 5GB per file' : 'Free Plan: 5GB storage, 100MB per file'}
+                </p>
             </div>
           </div>
 
