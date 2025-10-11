@@ -103,8 +103,8 @@ const FileView = () => {
   const handleAccess = async () => {
     try {
       const res = await API.post(`/files/${fileId}/access`, { password });
-      setViewUrl(res.data.viewUrl.replace('/api', ''));
-      setDownloadUrl(res.data.downloadUrl ? res.data.downloadUrl.replace('/api', '') : null);
+      setViewUrl(res.data.viewUrl);
+      setDownloadUrl(res.data.downloadUrl);
       setMessage("Access granted. Click view to see the file.");
       fetchComments(); // Fetch comments after access
     } catch (error) {
