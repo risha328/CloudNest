@@ -205,11 +205,11 @@ export const accessFile = async (req, res) => {
     let downloadUrl = null;
 
     if (hasViewerPermission) {
-      viewUrl = `/files/${file._id}/view`;
+      viewUrl = `/api/files/${file._id}/view`;
     }
 
     if (hasDownloadPermission) {
-      downloadUrl = `/files/${file._id}/download`;
+      downloadUrl = `/api/files/${file._id}/download`;
     }
 
     res.json({ viewUrl, downloadUrl });
