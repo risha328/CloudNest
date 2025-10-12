@@ -1,4 +1,5 @@
 import axios from "axios";
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:7000/api",
@@ -10,6 +11,9 @@ API.interceptors.request.use((req) => {
   if (token) req.headers.Authorization = `Bearer ${token}`;
   return req;
 });
+
+// Initialize Gemini AI
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 // Permission API functions
 export const grantPermission = (userId, resourceId, resourceType, role) =>
@@ -98,5 +102,75 @@ export const addComment = (fileId, content) =>
 
 export const deleteComment = (commentId) =>
   API.delete(`/comments/${commentId}`);
+
+// Helper function to convert blob to base64
+const blobToBase64 = (blob) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
+
+// AI Preview Functions
+export const summarizeText = async (text) => {
+  try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+    const prompt = `Summarize the following text in 2-3 sentences:\n\n${text}`;
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error('Error summarizing text:', error);
+    return 'Unable to generate summary.';
+  }
+};
+
+export const transcribeAudio = async (audioBlob) => {
+  try {
+    // Convert blob to base64 for Gemini multimodal input
+    const base64Audio = await blobToBase64(audioBlob);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+    const prompt = 'Transcribe this audio file to text. Provide the full transcription.';
+    const result = await model.generateContent([
+      prompt,
+      {
+        inlineData: {
+          mimeType: audioBlob.type,
+          data: base64Audio
+        }
+      }
+    ]);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error('Error transcribing audio:', error);
+    return 'Unable to transcribe audio.';
+  }
+};
+
+export const generateVideoThumbnail = async (videoBlob, fileName) => {
+  try {
+    // Convert blob to base64 for Gemini multimodal input
+    const base64Video = await blobToBase64(videoBlob);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+    const prompt = `Generate a description of what this video might show. Filename: ${fileName}. Provide a detailed description of the video content.`;
+    const result = await model.generateContent([
+      prompt,
+      {
+        inlineData: {
+          mimeType: videoBlob.type,
+          data: base64Video
+        }
+      }
+    ]);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error('Error generating video thumbnail:', error);
+    return 'Unable to generate video preview.';
+  }
+};
 
 export default API;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
-import API, { getComments, addComment, deleteComment } from "../utils/api";
+import API, { getComments, addComment, deleteComment, summarizeText, transcribeAudio, generateVideoThumbnail } from "../utils/api";
 import { AuthContext } from "../context/AuthContext";
 
 const FileView = () => {
@@ -20,6 +20,8 @@ const FileView = () => {
   const [updateExpiresAt, setUpdateExpiresAt] = useState("");
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const [aiPreview, setAiPreview] = useState("");
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
 
   useEffect(() => {
     fetchFile();
@@ -119,8 +121,40 @@ const FileView = () => {
       const url = URL.createObjectURL(blob);
       setFileBlobUrl(url);
       setMessage("File loaded. View below.");
+
+      // Generate AI preview based on file type
+      await generateAiPreview(blob);
     } catch (error) {
       setMessage("Failed to load file: " + (error.response?.data?.message || error.message));
+    }
+  };
+
+  const generateAiPreview = async (blob) => {
+    if (!file) return;
+
+    setIsGeneratingPreview(true);
+    try {
+      if (file.mimeType.startsWith('text/')) {
+        // For text files, read content and summarize
+        const text = await blob.text();
+        const summary = await summarizeText(text);
+        setAiPreview(`Summary: ${summary}`);
+      } else if (file.mimeType.startsWith('audio/')) {
+        // For audio files, transcribe
+        const transcription = await transcribeAudio(blob);
+        setAiPreview(`Transcription: ${transcription}`);
+      } else if (file.mimeType.startsWith('video/')) {
+        // For video files, generate thumbnail description
+        const description = await generateVideoThumbnail(blob, file.originalName);
+        setAiPreview(`Video Description: ${description}`);
+      } else {
+        setAiPreview("AI preview not available for this file type.");
+      }
+    } catch (error) {
+      console.error('Error generating AI preview:', error);
+      setAiPreview("Unable to generate AI preview.");
+    } finally {
+      setIsGeneratingPreview(false);
     }
   };
 
@@ -213,6 +247,18 @@ const FileView = () => {
             <img src={fileBlobUrl} alt="File" className="max-w-full h-auto border" />
           ) : (
             <iframe src={fileBlobUrl} className="w-full h-96 border" title="File Viewer" />
+          )}
+        </div>
+      )}
+
+      {/* AI Preview Section */}
+      {aiPreview && (
+        <div className="mt-6 bg-blue-50 p-4 rounded-lg">
+          <h2 className="text-xl font-bold mb-2">AI Preview</h2>
+          {isGeneratingPreview ? (
+            <p className="text-gray-600">Generating preview...</p>
+          ) : (
+            <p className="text-gray-800">{aiPreview}</p>
           )}
         </div>
       )}
