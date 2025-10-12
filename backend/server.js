@@ -16,7 +16,7 @@ connectDB();
 const app = express();
 app.use(express.json());
 app.use(cors({
-  origin: ['https://cloudnest-tau.vercel.app', 'http://localhost:5173'],
+  origin: ['https://cloudnest-tau.vercel.app', 'http://localhost:5173', 'http://localhost:3000'],
   credentials: true
 }));
 
