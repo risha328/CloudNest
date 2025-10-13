@@ -17,10 +17,18 @@ import {
     getFolderAnalytics,
     updateFile,
     getVersions,
-    restoreVersion
+    restoreVersion,
+    publicAccessFile,
+    publicViewFile,
+    publicDownloadFile
 } from "../controllers/fileController.js";
 
 const router = express.Router();
+
+// Public routes (no authentication required)
+router.post("/public/:id/access", publicAccessFile);
+router.get("/public/:id/view", publicViewFile);
+router.get("/public/:id/download", publicDownloadFile);
 
 // Authenticated routes
 router.get("/", protect, getFilesByFolder);

@@ -55,12 +55,13 @@ export const getFilesByFolder = (folderId) =>
   API.get(`/files?folderId=${folderId}`);
 
 // File API functions
-export const uploadFile = (file, password, expiresAt, folderId) => {
+export const uploadFile = (file, password, expiresAt, folderId, visibility) => {
   const formData = new FormData();
   formData.append('file', file);
   if (password) formData.append('password', password);
   if (expiresAt) formData.append('expiresAt', expiresAt);
   if (folderId) formData.append('folderId', folderId);
+  if (visibility) formData.append('visibility', visibility);
   return API.post('/files', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
@@ -92,6 +93,13 @@ export const getStorageStats = () =>
 
 export const getFolderAnalytics = (folderId) =>
   API.get(`/files/folder-analytics/${folderId}`);
+
+// Public file API functions (no auth required)
+export const publicAccessFile = (fileId, password) =>
+  API.post(`/files/public/${fileId}/access`, { password });
+
+export const publicDownloadFile = (fileId) =>
+  API.get(`/files/public/${fileId}/download`, { responseType: 'blob' });
 
 // Comment API functions
 export const getComments = (fileId) =>

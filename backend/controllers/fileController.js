@@ -16,7 +16,7 @@ import { checkPermission } from "./permissionController.js";
 // Upload file
 export const uploadFile = async (req, res) => {
   try {
-    const { password, expiresAt, folderId } = req.body;
+    const { password, expiresAt, folderId, visibility } = req.body;
     if (!req.file)
         return res.status(400).json({ message: "File is required" });
 
@@ -92,6 +92,7 @@ export const uploadFile = async (req, res) => {
       mimeType: req.file.mimetype,
       size: req.file.size,
       passwordHash,
+      visibility: visibility || 'private',
       expiresAt: expiresAt ? new Date(expiresAt) : null
     });
 
@@ -212,7 +213,7 @@ export const accessFile = async (req, res) => {
       downloadUrl = `/api/files/${file._id}/download`;
     }
 
-    res.json({ viewUrl, downloadUrl });
+    res.json({ viewUrl: viewUrl.replace('/api', ''), downloadUrl: downloadUrl.replace('/api', '') });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -561,6 +562,105 @@ export const getFolderAnalytics = async (req, res) => {
     };
 
     res.json(analytics);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Public access functions for public files
+export const publicAccessFile = async (req, res) => {
+  try {
+    const { password } = req.body;
+    const file = await File.findById(req.params.id);
+    if (!file) return res.status(404).json({ message: "File not found" });
+    if (file.blocked) return res.status(403).json({ message: "File is blocked" });
+    if (file.visibility !== 'public') return res.status(403).json({ message: "Access denied" });
+
+    // check expiry
+    if (file.expiresAt && new Date() > file.expiresAt) {
+      return res.status(410).json({ message: "File has expired" });
+    }
+
+    // check maxDownloads
+    if (file.maxDownloads && file.downloadCount >= file.maxDownloads) {
+      return res.status(410).json({ message: "Download limit reached" });
+    }
+
+    if (file.passwordHash) {
+      if (!password) return res.status(400).json({ message: "Password required" });
+      const isMatch = await bcrypt.compare(password, file.passwordHash);
+      if (!isMatch) {
+        file.failedAttempts += 1;
+        await file.save();
+        return res.status(401).json({ message: "Invalid password" });
+      }
+    }
+
+    // Track view
+    file.viewCount += 1;
+    file.viewTimestamps.push(new Date());
+    await file.save();
+
+    res.json({
+      viewUrl: `/api/files/public/${file._id}/view`,
+      downloadUrl: `/api/files/public/${file._id}/download`
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const publicViewFile = async (req, res) => {
+  try {
+    const file = await File.findById(req.params.id);
+    if (!file) return res.status(404).json({ message: "File not found" });
+    if (file.blocked) return res.status(403).json({ message: "File is blocked" });
+    if (file.visibility !== 'public') return res.status(403).json({ message: "Access denied" });
+
+    // check expiry
+    if (file.expiresAt && new Date() > file.expiresAt) {
+      return res.status(410).json({ message: "File has expired" });
+    }
+
+    // Track view
+    file.viewCount += 1;
+    file.viewTimestamps.push(new Date());
+    await file.save();
+
+    // Set headers for inline display
+    res.setHeader('Content-Type', file.mimeType);
+    res.setHeader('Content-Disposition', 'inline; filename="' + file.originalName + '"');
+    res.sendFile(path.resolve(file.path));
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const publicDownloadFile = async (req, res) => {
+  try {
+    const file = await File.findById(req.params.id);
+    if (!file) return res.status(404).json({ message: "File not found" });
+    if (file.blocked) return res.status(403).json({ message: "File is blocked" });
+    if (file.visibility !== 'public') return res.status(403).json({ message: "Access denied" });
+
+    // check expiry
+    if (file.expiresAt && new Date() > file.expiresAt) {
+      return res.status(410).json({ message: "File has expired" });
+    }
+
+    // check maxDownloads
+    if (file.maxDownloads && file.downloadCount >= file.maxDownloads) {
+      return res.status(410).json({ message: "Download limit reached" });
+    }
+
+    // Increment download count and track timestamp
+    file.downloadCount += 1;
+    file.downloadTimestamps.push(new Date());
+    await file.save();
+
+    // Set correct Content-Type
+    res.setHeader('Content-Type', file.mimeType);
+    res.download(path.resolve(file.path), file.originalName);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

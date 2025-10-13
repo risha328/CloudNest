@@ -1,4 +1,4 @@
-// import React, { useState, useEffect, useContext } from "react";
+    // import React, { useState, useEffect, useContext } from "react";
 // import API from "../utils/api";
 // import { AuthContext } from "../context/AuthContext";
 
@@ -248,6 +248,7 @@ const Dashboard = () => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [password, setPassword] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
+  const [visibility, setVisibility] = useState("private");
   const [uploadMessage, setUploadMessage] = useState("");
   const [folderMessage, setFolderMessage] = useState("");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -445,27 +446,28 @@ const Dashboard = () => {
     }
 
     setLoading(true);
-    const uploadPromises = uploadFiles.map(async (file, index) => {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("folderId", selectedFolder._id);
-      if (password) formData.append("password", password);
-      if (expiresAt) formData.append("expiresAt", expiresAt);
+      const uploadPromises = uploadFiles.map(async (file, index) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("folderId", selectedFolder._id);
+        if (password) formData.append("password", password);
+        if (expiresAt) formData.append("expiresAt", expiresAt);
+        formData.append("visibility", visibility);
 
-      try {
-        const res = await API.post("/files", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            setUploadProgress(prev => ({ ...prev, [index]: percentCompleted }));
-          },
-        });
-        return { success: true, fileName: file.name };
-      } catch (error) {
-        console.error(`Failed to upload ${file.name}:`, error);
-        return { success: false, fileName: file.name, error: error.response?.data?.message || error.message };
-      }
-    });
+        try {
+          const res = await API.post("/files", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+            onUploadProgress: (progressEvent) => {
+              const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              setUploadProgress(prev => ({ ...prev, [index]: percentCompleted }));
+            },
+          });
+          return { success: true, fileName: file.name };
+        } catch (error) {
+          console.error(`Failed to upload ${file.name}:`, error);
+          return { success: false, fileName: file.name, error: error.response?.data?.message || error.message };
+        }
+      });
 
     try {
       const results = await Promise.all(uploadPromises);
@@ -501,8 +503,12 @@ const Dashboard = () => {
     }
   };
 
-  const getSecureLink = (fileId) => {
-    return `${window.location.origin}/file/${fileId}`;
+  const getSecureLink = (file) => {
+    if (file.visibility === 'public') {
+      return `${window.location.origin}/public/${file._id}/view`;
+    } else {
+      return `${window.location.origin}/file/${file._id}`;
+    }
   };
 
   const copyToClipboard = (text) => {
@@ -973,12 +979,12 @@ const Dashboard = () => {
                                   <input
                                     type="text"
                                     readOnly
-                                    value={getSecureLink(file._id)}
+                                    value={getSecureLink(file)}
                                     className="w-full px-3 py-2 pr-20 text-sm border border-gray-300 rounded-lg bg-gray-50 truncate"
                                     onFocus={(e) => e.target.select()}
                                   />
                                   <button
-                                    onClick={() => copyToClipboard(getSecureLink(file._id))}
+                                    onClick={() => copyToClipboard(getSecureLink(file))}
                                     className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 transition-colors"
                                   >
                                     Copy
@@ -1241,6 +1247,20 @@ const Dashboard = () => {
                   onChange={(e) => setExpiresAt(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Visibility
+                </label>
+                <select
+                  value={visibility}
+                  onChange={(e) => setVisibility(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                >
+                  <option value="private">Private (only you can access)</option>
+                  <option value="public">Public (anyone with link can access)</option>
+                </select>
               </div>
 
               {uploadMessage && (

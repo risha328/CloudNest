@@ -8,6 +8,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
 import FileView from "./pages/FileView";
+import PublicFileView from "./pages/PublicFileView";
 import FileAnalytics from "./pages/FileAnalytics";
 import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
@@ -47,6 +48,7 @@ function AppContent() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/upload" element={<ProtectedRoute><Upload /></ProtectedRoute>} />
           <Route path="/file/:id" element={<ProtectedRoute><FileView /></ProtectedRoute>} />
+          <Route path="/public/:id/view" element={<PublicFileView />} />
           <Route path="/analytics/:type/:id" element={<ProtectedRoute><FileAnalytics /></ProtectedRoute>} />
 
           {/* Admin Routes */}

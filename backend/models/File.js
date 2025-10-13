@@ -9,6 +9,7 @@ const fileSchema = new mongoose.Schema({
   mimeType: { type: String },
   size: { type: Number },
   passwordHash: { type: String }, // bcrypt hash
+  visibility: { type: String, enum: ['public', 'private'], default: 'private' },
   downloadCount: { type: Number, default: 0 },
   viewCount: { type: Number, default: 0 },
   downloadTimestamps: [{ type: Date }],
