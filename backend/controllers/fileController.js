@@ -213,7 +213,12 @@ export const accessFile = async (req, res) => {
       downloadUrl = `/api/files/${file._id}/download`;
     }
 
-    res.json({ viewUrl: viewUrl.replace('/api', ''), downloadUrl: downloadUrl.replace('/api', '') });
+    // Build absolute URLs so frontend doesn't depend on its own baseURL configuration.
+    const base = process.env.PUBLIC_API_BASE_URL || `${req.protocol}://${req.get('host')}`;
+    res.json({
+      viewUrl: viewUrl ? `${base}${viewUrl}` : null,
+      downloadUrl: downloadUrl ? `${base}${downloadUrl}` : null,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -601,9 +606,10 @@ export const publicAccessFile = async (req, res) => {
     file.viewTimestamps.push(new Date());
     await file.save();
 
+    const base = process.env.PUBLIC_API_BASE_URL || `${req.protocol}://${req.get('host')}`;
     res.json({
-      viewUrl: `/api/files/public/${file._id}/view`,
-      downloadUrl: `/api/files/public/${file._id}/download`
+      viewUrl: `${base}/api/files/public/${file._id}/view`,
+      downloadUrl: `${base}/api/files/public/${file._id}/download`
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

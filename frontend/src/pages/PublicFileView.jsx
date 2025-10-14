@@ -23,12 +23,18 @@ const PublicFileView = () => {
   const handleAccess = async () => {
     try {
       const res = await API.post(`/files/public/${fileId}/access`, { password });
-      // backend may return paths with or without the leading `/api` prefix.
-      // Normalize to the frontend API helper's expected path (no leading /api)
-      const view = res.data.viewUrl ? res.data.viewUrl.replace(/^\/api/, '') : '';
-      const download = res.data.downloadUrl ? res.data.downloadUrl.replace(/^\/api/, '') : '';
-      setViewUrl(view);
-      setDownloadUrl(download);
+      // Backend now returns absolute URLs (recommended). If it returns a relative
+      // path, normalize it to be absolute using the API base URL.
+      const makeAbsolute = (u) => {
+        if (!u) return '';
+        if (/^https?:\/\//i.test(u)) return u;
+        // remove duplicate slashes when joining
+        const base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7000/api';
+        return base.replace(/\/$/, '') + '/' + u.replace(/^\//, '');
+      };
+
+      setViewUrl(makeAbsolute(res.data.viewUrl));
+      setDownloadUrl(makeAbsolute(res.data.downloadUrl));
       setMessage("Access granted. Click view to see the file.");
     } catch (error) {
       setMessage(error.response?.data?.message || "Access failed");
@@ -55,7 +61,11 @@ const PublicFileView = () => {
 
   const handleDownload = async () => {
     try {
-      const res = await API.get(`/files/public/${fileId}/download`, { responseType: 'blob' });
+      // Prefer the absolute downloadUrl returned by backend
+      const target = downloadUrl || `/files/public/${fileId}/download`;
+      // If target is absolute, use axios directly with full URL, otherwise use API (baseURL)
+      const axiosTarget = /^https?:\/\//i.test(target) ? target : target;
+      const res = await API.get(axiosTarget, { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
