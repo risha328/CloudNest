@@ -9,6 +9,8 @@ import folderRoutes from "./routes/folderRoutes.js";
 import permissionRoutes from "./routes/permissionRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import fairUseRoutes from "./routes/fairUseRoutes.js";
+import "./midddleware/bandwidthResetCron.js";
 
 dotenv.config();
 connectDB();
@@ -29,6 +31,7 @@ app.use("/api/folders", folderRoutes);
 app.use("/api/permissions", permissionRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/fair-use", fairUseRoutes);
 
 const PORT = process.env.PORT || 7000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

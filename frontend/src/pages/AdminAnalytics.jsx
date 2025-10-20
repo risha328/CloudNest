@@ -301,7 +301,7 @@ const AdminAnalytics = () => {
         {/* Navigation Tabs */}
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8">
-            {['overview', 'users', 'files', 'security'].map((tab) => (
+            {['overview', 'users', 'files', 'security', 'fair-use'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -543,6 +543,135 @@ const AdminAnalytics = () => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Fair Use Tab */}
+        {activeTab === 'fair-use' && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Bandwidth Usage by Plan</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={[
+                    {
+                      name: 'Free Users',
+                      used: analyticsData?.fairUseAnalytics?.bandwidthUsage?.free?.total || 0,
+                      average: analyticsData?.fairUseAnalytics?.bandwidthUsage?.free?.average || 0,
+                      users: analyticsData?.fairUseAnalytics?.bandwidthUsage?.free?.users || 0
+                    },
+                    {
+                      name: 'Pro Users',
+                      used: analyticsData?.fairUseAnalytics?.bandwidthUsage?.pro?.total || 0,
+                      average: analyticsData?.fairUseAnalytics?.bandwidthUsage?.pro?.average || 0,
+                      users: analyticsData?.fairUseAnalytics?.bandwidthUsage?.pro?.users || 0
+                    }
+                  ]}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const data = payload[0].payload;
+                          return (
+                            <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+                              <p className="font-semibold text-gray-900">{data.name}</p>
+                              <p className="text-sm text-blue-600">Total Used: {formatFileSize(data.used)}</p>
+                              <p className="text-sm text-green-600">Average: {formatFileSize(data.average)}</p>
+                              <p className="text-sm text-gray-600">Users: {formatNumber(data.users)}</p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Bar dataKey="used" fill="#8884d8" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Fair Use Overview</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                    <span className="text-blue-800 font-medium">Total Users</span>
+                    <span className="text-blue-600 font-bold">
+                      {analyticsData?.fairUseAnalytics?.totalUsers || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                    <span className="text-green-800 font-medium">Free Users</span>
+                    <span className="text-green-600 font-bold">
+                      {analyticsData?.fairUseAnalytics?.bandwidthUsage?.free?.users || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                    <span className="text-purple-800 font-medium">Pro Users</span>
+                    <span className="text-purple-600 font-bold">
+                      {analyticsData?.fairUseAnalytics?.bandwidthUsage?.pro?.users || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                    <span className="text-red-800 font-medium">Over Limit Users</span>
+                    <span className="text-red-600 font-bold">
+                      {analyticsData?.fairUseAnalytics?.overLimitUsers?.length || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                    <span className="text-yellow-800 font-medium">Inactive Users (30d+)</span>
+                    <span className="text-yellow-600 font-bold">
+                      {analyticsData?.fairUseAnalytics?.inactiveUsers?.length || 0}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Over Limit Users Table */}
+            {analyticsData?.fairUseAnalytics?.overLimitUsers?.length > 0 && (
+              <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Users Over Bandwidth Limit</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          User
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Used
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Limit
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Over By
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {analyticsData.fairUseAnalytics.overLimitUsers.map((user, index) => (
+                        <tr key={index}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {user.email}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {formatFileSize(user.used)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {formatFileSize(user.limit)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
+                            {formatFileSize(user.overBy)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

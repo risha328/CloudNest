@@ -116,10 +116,20 @@ const FileView = () => {
 
   const handleView = async () => {
     try {
-      const res = await API.get(viewUrl, { responseType: 'blob' });
-      const blob = new Blob([res.data], { type: res.headers['content-type'] });
-      const url = URL.createObjectURL(blob);
-      setFileBlobUrl(url);
+      // Use the viewUrl directly since it's already a complete URL
+      const res = await fetch(viewUrl, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const blob = new Blob([await res.blob()], { type: res.headers.get('content-type') });
+      const blobUrl = URL.createObjectURL(blob);
+      setFileBlobUrl(blobUrl);
       setMessage("File loaded. View below.");
 
       // Generate AI preview based on file type

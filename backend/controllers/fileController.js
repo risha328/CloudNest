@@ -6,6 +6,7 @@ import File from "../models/File.js";
 import Folder from "../models/Folder.js";
 import Permission from "../models/Permission.js";
 import { checkPermission } from "./permissionController.js";
+import { checkBandwidthLimit, updateBandwidthUsage } from "./fairUseController.js";
 
 // ClamScan disabled temporarily
 // const clamscan = await new ClamScan().init({
@@ -261,10 +262,24 @@ export const downloadFile = async (req, res) => {
     const hasPermission = await checkPermission(req.user._id, file._id, 'file', 'downloader');
     if (!hasPermission) return res.status(403).json({ message: "Download denied" });
 
+    // Check bandwidth limit before allowing download
+    const bandwidthCheck = await checkBandwidthLimit(req.user._id, file.size);
+    if (!bandwidthCheck.allowed) {
+      return res.status(429).json({
+        message: "Bandwidth limit exceeded. Please upgrade to Pro for higher limits or wait until next month.",
+        limit: bandwidthCheck.limit,
+        used: bandwidthCheck.currentUsage,
+        remaining: bandwidthCheck.remaining
+      });
+    }
+
     // Increment download count and track timestamp
     file.downloadCount += 1;
     file.downloadTimestamps.push(new Date());
     await file.save();
+
+    // Update bandwidth usage
+    await updateBandwidthUsage(req.user._id, file.size);
 
     // Set correct Content-Type
     res.setHeader('Content-Type', file.mimeType);
@@ -388,7 +403,7 @@ export const getStorageStats = async (req, res) => {
     const filesCount = stats.length > 0 ? stats[0].filesCount : 0;
 
     // Dynamic storage limits based on plan
-    const total = req.user.plan === 'pro' ? 268435456000 : 5368709120; // 250GB for pro, 5GB for free
+    const total = req.user.plan === 'pro' ? 21474836480 : 2147483648; // 20GB for pro, 2GB for free
 
     const percentage = total > 0 ? ((used / total) * 100).toFixed(2) : 0;
 
@@ -671,4 +686,3 @@ export const publicDownloadFile = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-

@@ -1,6 +1,7 @@
 import File from "../models/File.js";
 import User from "../models/User.js";
 import Folder from "../models/Folder.js";
+import { getFairUseAnalytics } from "./fairUseController.js";
 import fs from "fs";
 import path from "path";
 
@@ -328,7 +329,8 @@ export const getAdminSettings = async (req, res) => {
         maxUsersPerAccount: 1
       },
       storage: {
-        maxStoragePerUser: 1024 * 1024 * 1024, // 1GB
+        maxStoragePerUser: 2147483648, // 2GB (updated for free users)
+        maxStoragePerUserPro: 21474836480, // 20GB (updated for pro users)
         cleanupOldFiles: true,
         cleanupAfterDays: 90,
         compressionEnabled: true
@@ -568,6 +570,9 @@ export const getAnalyticsData = async (req, res) => {
       scanSuccessRate: 100
     };
 
+    // Fair Use Analytics
+    const fairUseAnalytics = await getFairUseAnalytics();
+
     res.json({
       uploadTrends,
       downloadTrends,
@@ -583,7 +588,8 @@ export const getAnalyticsData = async (req, res) => {
         totalStorage: totalStorage[0]?.storage || 0
       },
       realTimeStats,
-      securityStats
+      securityStats,
+      fairUseAnalytics
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
