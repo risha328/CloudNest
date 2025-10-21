@@ -92,24 +92,24 @@ const checkAndSendWarnings = async (user) => {
 };
 
 // Get bandwidth stats for user
-export const getBandwidthStats = async (userId) => {
+export const getBandwidthStats = async (req, res) => {
   try {
-    const user = await User.findById(userId);
-    if (!user) return null;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     const limit = BANDWIDTH_LIMITS[user.plan] || BANDWIDTH_LIMITS.free;
 
-    return {
+    res.json({
       used: user.bandwidthUsed,
       limit: limit,
       remaining: Math.max(0, limit - user.bandwidthUsed),
       percentage: ((user.bandwidthUsed / limit) * 100).toFixed(2),
       resetDate: user.bandwidthResetDate,
       lastActivity: user.lastActivity
-    };
+    });
   } catch (error) {
     console.error('Bandwidth stats error:', error);
-    return null;
+    res.status(500).json({ message: error.message });
   }
 };
 
