@@ -699,7 +699,7 @@ const Dashboard = () => {
               </div>
               <p className="text-xs text-gray-500">{formatStoragePercentage()}% of storage used</p>
                 <p className="text-xs text-gray-400">
-                  {user && user.plan === 'pro' ? 'Pro Plan: 250GB storage, 5GB per file' : 'Free Plan: 5GB storage, 100MB per file'}
+                  {user && user.plan === 'pro' ? 'Pro Plan: 20GB storage' : 'Free Plan: 2GB storage'}
                 </p>
             </div>
           </div>
