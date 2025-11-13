@@ -80,9 +80,17 @@ export const getFolders = async (req, res) => {
 // Delete a folder (owner only)
 export const deleteFolder = async (req, res) => {
   try {
+    console.log('Delete folder request:', { folderId: req.params.id, userId: req.user._id });
     const folder = await Folder.findById(req.params.id);
-    if (!folder) return res.status(404).json({ message: "Folder not found" });
-    if (!folder.ownerId.equals(req.user._id)) return res.status(403).json({ message: "Forbidden" });
+    if (!folder) {
+      console.log('Folder not found:', req.params.id);
+      return res.status(404).json({ message: "Folder not found" });
+    }
+    console.log('Folder found:', { folderId: folder._id, ownerId: folder.ownerId, userId: req.user._id });
+    if (!folder.ownerId.equals(req.user._id)) {
+      console.log('Permission denied: user is not owner');
+      return res.status(403).json({ message: "Forbidden" });
+    }
 
     // Find all files in the folder
     const files = await File.find({ folderId: folder._id });
@@ -90,18 +98,43 @@ export const deleteFolder = async (req, res) => {
     // Delete files from filesystem and database
     for (const file of files) {
       try {
-        fs.unlinkSync(path.resolve(file.path));
+        const filePath = path.resolve(file.path);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        } else {
+          console.warn(`File not found on filesystem, skipping unlink: ${file.path}`);
+        }
       } catch (err) {
         console.error(`Failed to delete file ${file.path}:`, err);
       }
-      await file.remove();
+      try {
+        await file.deleteOne();
+      } catch (err) {
+        console.error(`Failed to delete file from database ${file._id}:`, err);
+      }
     }
 
     // Delete permissions for the folder
-    await Permission.deleteMany({ resourceId: folder._id, resourceType: 'folder' });
+    try {
+      await Permission.deleteMany({ resourceId: folder._id, resourceType: 'folder' });
+    } catch (err) {
+      console.error('Failed to delete permissions for folder', folder._id, err);
+    }
+
+    // Delete favorites for the folder
+    try {
+      await Favorite.deleteMany({ folderId: folder._id });
+    } catch (err) {
+      console.error('Failed to delete favorites for folder', folder._id, err);
+    }
 
     // Delete the folder
-    await folder.remove();
+    try {
+      await folder.deleteOne();
+    } catch (err) {
+      console.error('Failed to delete folder', folder._id, err);
+      throw err; // Re-throw to return error response
+    }
 
     res.json({ message: "Folder and all its contents deleted successfully" });
   } catch (error) {
