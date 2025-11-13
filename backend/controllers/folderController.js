@@ -93,14 +93,19 @@ export const deleteFolder = async (req, res) => {
     }
 
     // Find all files in the folder
+    console.log('Finding files in folder...');
     const files = await File.find({ folderId: folder._id });
+    console.log(`Found ${files.length} files to delete`);
 
     // Delete files from filesystem and database
     for (const file of files) {
+      console.log(`Processing file: ${file._id}, path: ${file.path}`);
       try {
         const filePath = path.resolve(file.path);
+        console.log(`Resolved file path: ${filePath}`);
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
+          console.log(`Deleted file from filesystem: ${filePath}`);
         } else {
           console.warn(`File not found on filesystem, skipping unlink: ${file.path}`);
         }
@@ -109,6 +114,7 @@ export const deleteFolder = async (req, res) => {
       }
       try {
         await file.deleteOne();
+        console.log(`Deleted file from database: ${file._id}`);
       } catch (err) {
         console.error(`Failed to delete file from database ${file._id}:`, err);
       }
