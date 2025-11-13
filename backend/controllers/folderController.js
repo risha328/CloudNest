@@ -101,15 +101,28 @@ export const deleteFolder = async (req, res) => {
     const fileDeletePromises = files.map(async (file) => {
       try {
         // Delete main file
-        if (file.path && fs.existsSync(file.path)) {
-          await fs.promises.unlink(file.path);
+        try {
+          if (file.path && fs.existsSync(path.resolve(file.path))) {
+            fs.unlinkSync(path.resolve(file.path));
+          } else {
+            console.warn('File not found on filesystem, skipping unlink:', file.path);
+          }
+        } catch (unlinkError) {
+          console.warn('Warning: Could not delete file from filesystem:', unlinkError.message);
+          // Continue to delete from DB even if file deletion fails
         }
 
         // Delete all version files
         if (file.versions && file.versions.length > 0) {
           for (const version of file.versions) {
-            if (version.path && fs.existsSync(version.path)) {
-              await fs.promises.unlink(version.path);
+            try {
+              if (version.path && fs.existsSync(path.resolve(version.path))) {
+                fs.unlinkSync(path.resolve(version.path));
+              } else {
+                console.warn('Version file not found on filesystem, skipping unlink:', version.path);
+              }
+            } catch (versionUnlinkError) {
+              console.warn('Warning: Could not delete version file from filesystem:', versionUnlinkError.message);
             }
           }
         }
