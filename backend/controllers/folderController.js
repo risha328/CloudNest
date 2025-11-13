@@ -98,50 +98,50 @@ export const deleteFolder = async (req, res) => {
     console.log(`Found ${files.length} files to delete`);
 
     // Delete files from filesystem and database
-    for (const file of files) {
-      console.log(`Processing file: ${file._id}, path: ${file.path}`);
+    const fileDeletePromises = files.map(async (file) => {
       try {
-        const filePath = path.resolve(file.path);
-        console.log(`Resolved file path: ${filePath}`);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-          console.log(`Deleted file from filesystem: ${filePath}`);
-        } else {
-          console.warn(`File not found on filesystem, skipping unlink: ${file.path}`);
+        if (file.path) {
+          const filePath = path.resolve(file.path);
+          if (fs.existsSync(filePath)) {
+            await fs.promises.unlink(filePath);
+          }
         }
-      } catch (err) {
-        console.error(`Failed to delete file ${file.path}:`, err);
-      }
-      try {
         await file.deleteOne();
-        console.log(`Deleted file from database: ${file._id}`);
       } catch (err) {
-        console.error(`Failed to delete file from database ${file._id}:`, err);
+        console.error(`Failed to delete file ${file._id}:`, err);
       }
-    }
+    });
+    await Promise.all(fileDeletePromises);
 
     // Delete permissions for the folder
+    console.log('Deleting permissions for folder...');
     try {
-      await Permission.deleteMany({ resourceId: folder._id, resourceType: 'folder' });
+      const permissionResult = await Permission.deleteMany({ resourceId: folder._id, resourceType: 'folder' });
+      console.log(`Deleted ${permissionResult.deletedCount} permissions for folder`);
     } catch (err) {
       console.error('Failed to delete permissions for folder', folder._id, err);
     }
 
     // Delete favorites for the folder
+    console.log('Deleting favorites for folder...');
     try {
-      await Favorite.deleteMany({ folderId: folder._id });
+      const favoriteResult = await Favorite.deleteMany({ folderId: folder._id });
+      console.log(`Deleted ${favoriteResult.deletedCount} favorites for folder`);
     } catch (err) {
       console.error('Failed to delete favorites for folder', folder._id, err);
     }
 
     // Delete the folder
+    console.log('Deleting folder from database...');
     try {
       await folder.deleteOne();
+      console.log('Successfully deleted folder from database');
     } catch (err) {
       console.error('Failed to delete folder', folder._id, err);
       throw err; // Re-throw to return error response
     }
 
+    console.log('Folder deletion completed successfully');
     res.json({ message: "Folder and all its contents deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });

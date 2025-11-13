@@ -618,7 +618,7 @@ const Dashboard = () => {
       fetchStorageStats();
     } catch (error) {
       console.error("Failed to delete folder", error);
-      alert("Failed to delete folder. You may not have permission or the folder may not exist.");
+      alert(`Failed to delete folder: ${error.response?.data?.message || error.message}`);
     } finally {
       setDeletingFolderId(null);
     }
