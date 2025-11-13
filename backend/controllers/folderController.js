@@ -100,15 +100,25 @@ export const deleteFolder = async (req, res) => {
     // Delete files from filesystem and database
     const fileDeletePromises = files.map(async (file) => {
       try {
-        if (file.path) {
-          const filePath = path.resolve(file.path);
-          if (fs.existsSync(filePath)) {
-            await fs.promises.unlink(filePath);
+        // Delete main file
+        if (file.path && fs.existsSync(file.path)) {
+          await fs.promises.unlink(file.path);
+        }
+
+        // Delete all version files
+        if (file.versions && file.versions.length > 0) {
+          for (const version of file.versions) {
+            if (version.path && fs.existsSync(version.path)) {
+              await fs.promises.unlink(version.path);
+            }
           }
         }
+
+        // Delete from database
         await file.deleteOne();
       } catch (err) {
         console.error(`Failed to delete file ${file._id}:`, err);
+        // Continue with other files even if one fails
       }
     });
     await Promise.all(fileDeletePromises);
